@@ -1,6 +1,9 @@
-const { scrypt, randomBytes } = require('crypto');
-const { promisify } = require('util');
-const { Pool } = require('@neondatabase/serverless');
+import { scrypt, randomBytes } from 'crypto';
+import { promisify } from 'util';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import ws from 'ws';
+
+neonConfig.webSocketConstructor = ws;
 
 const scryptAsync = promisify(scrypt);
 
@@ -14,19 +17,21 @@ async function createUsers() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   
   try {
-    const adminPassword = await hashPassword('admin123');
-    const johnPassword = await hashPassword('password');
-    const empPassword = await hashPassword('emp123');
+    // Check if ckelemen user already exists
+    const existingUser = await pool.query('SELECT username FROM users WHERE username = $1', ['ckelemen']);
     
-    await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', ['admin', adminPassword]);
-    await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', ['john', johnPassword]);
-    await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', ['employee1', empPassword]);
+    if (existingUser.rows.length > 0) {
+      console.log('User "ckelemen" already exists!');
+      return;
+    }
     
-    console.log('Test users created successfully!');
+    // Only create the new user
+    const ckelemenPassword = await hashPassword('milstead205');
+    await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', ['ckelemen', ckelemenPassword]);
+    
+    console.log('New user created successfully!');
     console.log('Credentials:');
-    console.log('admin / admin123');
-    console.log('john / password');
-    console.log('employee1 / emp123');
+    console.log('ckelemen / milstead205');
     
   } catch (error) {
     console.error('Error creating users:', error);
