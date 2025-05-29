@@ -65,6 +65,8 @@ export function shareInvoice(invoice: Invoice) {
     navigator.share({
       title: 'Towing Invoice',
       text: invoiceText
+    }).catch(() => {
+      // User cancelled share or share failed, no need to show error
     });
   } else {
     // Fallback for browsers that don't support Web Share API
