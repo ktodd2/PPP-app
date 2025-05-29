@@ -8,6 +8,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await storage.seedTowingServices();
   await storage.seedCompanySettings();
 
+  // Configure multer for logo uploads
+  const multer = require('multer');
+  const path = require('path');
+  
+  const logoStorage = multer.diskStorage({
+    destination: (req: any, file: any, cb: any) => {
+      cb(null, 'uploads/');
+    },
+    filename: (req: any, file: any, cb: any) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, 'logo-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+
+  const upload = multer({ 
+    storage: logoStorage,
+    fileFilter: (req: any, file: any, cb: any) => {
+      const allowedTypes = /jpeg|jpg|png|gif|webp/;
+      const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+      const mimetype = allowedTypes.test(file.mimetype);
+      
+      if (mimetype && extname) {
+        return cb(null, true);
+      } else {
+        cb(new Error('Only image files are allowed'));
+      }
+    },
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  });
+
   // Get all jobs
   app.get("/api/jobs", async (req, res) => {
     try {
@@ -96,6 +126,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching company settings:", error);
       res.status(500).json({ error: "Failed to fetch company settings" });
+    }
+  });
+
+  // Upload logo
+  app.post("/api/company/logo", upload.single('logo'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      
+      const logoPath = `/uploads/${req.file.filename}`;
+      const settings = await storage.updateCompanySettings({ companyLogo: logoPath });
+      res.json({ logoPath, settings });
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      res.status(400).json({ error: "Failed to upload logo" });
     }
   });
 

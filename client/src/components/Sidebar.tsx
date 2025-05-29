@@ -229,15 +229,27 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Logo (Emoji)
+                  Company Logo
                 </label>
-                <input
-                  type="text"
-                  value={companySettings.companyLogo || ''}
-                  onChange={(e) => handleCompanySettingsChange({ companyLogo: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
-                  placeholder="🚛"
-                />
+                <div className="space-y-2">
+                  {companySettings.companyLogo && (
+                    <div className="flex items-center space-x-2">
+                      <img 
+                        src={companySettings.companyLogo} 
+                        alt="Company Logo" 
+                        className="w-12 h-12 object-contain border rounded"
+                      />
+                      <span className="text-sm text-gray-600">Current logo</span>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                  />
+                  <p className="text-xs text-gray-500">Upload JPG, PNG, GIF, or WebP (max 5MB)</p>
+                </div>
               </div>
 
               <div>
