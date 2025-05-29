@@ -45,7 +45,7 @@ function Router() {
   });
 
   const handleCalculateInvoice = async () => {
-    const calculatedInvoice = calculateInvoice(jobInfo, selectedServices, services, subcontractors);
+    const calculatedInvoice = calculateInvoice(jobInfo, selectedServices, services, subcontractors, customServices);
     setInvoice(calculatedInvoice);
     
     // Save job to database
@@ -167,7 +167,10 @@ function Router() {
       fuelSurcharge: 15
     });
     setSelectedServices({});
+    setSubcontractors([]);
+    setCustomServices([]);
     setInvoice(null);
+    setCurrentJobId(null);
   };
 
   return (

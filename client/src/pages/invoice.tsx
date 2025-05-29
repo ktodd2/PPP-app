@@ -148,6 +148,21 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
             </div>
           </div>
 
+          {/* Custom Services */}
+          {invoice.customServices && invoice.customServices.length > 0 && (
+            <div className="mb-6">
+              <h3 className="font-bold text-gray-800 mb-3">Custom Services</h3>
+              <div className="space-y-2">
+                {invoice.customServices.map((service, index) => (
+                  <div key={index} className="flex justify-between text-sm">
+                    <span className="flex-1">{service.name}</span>
+                    <span className="w-16 text-right font-medium">${service.price.toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Subcontractors */}
           {invoice.subcontractors && invoice.subcontractors.length > 0 && (
             <div className="mb-6">
@@ -199,6 +214,12 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
                 <span>Subtotal:</span>
                 <span>${invoice.subtotal.toFixed(2)}</span>
               </div>
+              {invoice.customServicesTotal > 0 && (
+                <div className="flex justify-between">
+                  <span>Custom Services:</span>
+                  <span>${invoice.customServicesTotal.toFixed(2)}</span>
+                </div>
+              )}
               {invoice.subcontractorTotal > 0 && (
                 <div className="flex justify-between">
                   <span>Subcontractors:</span>
