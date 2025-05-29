@@ -1,13 +1,19 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
 import type { JobInfo } from '@/lib/invoice';
+import { Camera, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface HomePageProps {
   jobInfo: JobInfo;
   setJobInfo: (jobInfo: JobInfo) => void;
+  selectedPhotos?: File[];
+  setSelectedPhotos?: (photos: File[]) => void;
 }
 
-export default function HomePage({ jobInfo, setJobInfo }: HomePageProps) {
+export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
 
   const handleInputChange = (field: keyof JobInfo, value: string | number) => {
@@ -15,6 +21,19 @@ export default function HomePage({ jobInfo, setJobInfo }: HomePageProps) {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    if (setSelectedPhotos) {
+      setSelectedPhotos([...selectedPhotos, ...files]);
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    if (setSelectedPhotos) {
+      setSelectedPhotos(selectedPhotos.filter((_, i) => i !== index));
+    }
   };
 
   const handleNext = () => {
@@ -100,6 +119,42 @@ export default function HomePage({ jobInfo, setJobInfo }: HomePageProps) {
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
               />
+            </div>
+
+            {/* Photo Upload Section */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Camera className="inline mr-2 h-4 w-4" />
+                Job Photos (Optional)
+              </label>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handlePhotoSelect}
+                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+              
+              {/* Photo Preview Grid */}
+              {selectedPhotos.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  {selectedPhotos.map((photo, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={URL.createObjectURL(photo)}
+                        alt={`Job photo ${index + 1}`}
+                        className="w-full h-20 object-cover rounded-lg border-2 border-gray-200"
+                      />
+                      <button
+                        onClick={() => removePhoto(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-lg"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

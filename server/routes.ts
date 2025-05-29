@@ -117,6 +117,54 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
+  // Upload job photos
+  app.post("/api/jobs/:id/photos", upload.array('photos', 20), async (req, res) => {
+    try {
+      const jobId = parseInt(req.params.id);
+      const files = req.files as Express.Multer.File[];
+      
+      if (!files || files.length === 0) {
+        return res.status(400).json({ error: "No photos provided" });
+      }
+
+      const uploadedPhotos = [];
+      for (const file of files) {
+        const photoPath = `/uploads/${file.filename}`;
+        const photo = await storage.addJobPhoto(jobId, photoPath);
+        uploadedPhotos.push(photo);
+      }
+      
+      res.json({ photos: uploadedPhotos });
+    } catch (error) {
+      console.error("Error uploading photos:", error);
+      res.status(500).json({ error: "Failed to upload photos" });
+    }
+  });
+
+  // Get job photos
+  app.get("/api/jobs/:id/photos", async (req, res) => {
+    try {
+      const jobId = parseInt(req.params.id);
+      const photos = await storage.getJobPhotos(jobId);
+      res.json(photos);
+    } catch (error) {
+      console.error("Error fetching photos:", error);
+      res.status(500).json({ error: "Failed to fetch photos" });
+    }
+  });
+
+  // Delete job photo
+  app.delete("/api/photos/:id", async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.id);
+      await storage.deleteJobPhoto(photoId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting photo:", error);
+      res.status(500).json({ error: "Failed to delete photo" });
+    }
+  });
+
   // Update company settings
   app.put("/api/company", async (req, res) => {
     try {

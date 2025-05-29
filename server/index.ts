@@ -15,7 +15,8 @@ const uploadStorage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'logo-' + uniqueSuffix + path.extname(file.originalname));
+    const prefix = file.fieldname === 'logo' ? 'logo-' : 'job-';
+    cb(null, prefix + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
