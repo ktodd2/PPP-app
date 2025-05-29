@@ -65,9 +65,21 @@ export const insertCompanySettingsSchema = createInsertSchema(companySettings).o
 export type InsertCompanySettings = z.infer<typeof insertCompanySettingsSchema>;
 export type CompanySettings = typeof companySettings.$inferSelect;
 
+export const jobPhotos = pgTable("job_photos", {
+  id: serial("id").primaryKey(),
+  jobId: integer("job_id").references(() => jobs.id, { onDelete: "cascade" }).notNull(),
+  photoPath: text("photo_path").notNull(),
+  caption: text("caption"),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+export type JobPhoto = typeof jobPhotos.$inferSelect;
+export type InsertJobPhoto = typeof jobPhotos.$inferInsert;
+
 // Relations
 export const jobsRelations = relations(jobs, ({ many }) => ({
   invoiceServices: many(invoiceServices),
+  photos: many(jobPhotos),
 }));
 
 export const towingServicesRelations = relations(towingServices, ({ many }) => ({
@@ -82,6 +94,13 @@ export const invoiceServicesRelations = relations(invoiceServices, ({ one }) => 
   service: one(towingServices, {
     fields: [invoiceServices.serviceId],
     references: [towingServices.id],
+  }),
+}));
+
+export const jobPhotosRelations = relations(jobPhotos, ({ one }) => ({
+  job: one(jobs, {
+    fields: [jobPhotos.jobId],
+    references: [jobs.id],
   }),
 }));
 

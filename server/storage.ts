@@ -1,4 +1,4 @@
-import { jobs, towingServices, invoiceServices, companySettings, type Job, type InsertJob, type TowingService, type CompanySettings, type InsertCompanySettings } from "@shared/schema";
+import { jobs, towingServices, invoiceServices, companySettings, jobPhotos, type Job, type InsertJob, type TowingService, type CompanySettings, type InsertCompanySettings, type JobPhoto, type InsertJobPhoto } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -14,6 +14,9 @@ export interface IStorage {
   getCompanySettings(): Promise<CompanySettings | undefined>;
   updateCompanySettings(settings: InsertCompanySettings): Promise<CompanySettings>;
   seedCompanySettings(): Promise<void>;
+  addJobPhoto(jobId: number, photoPath: string, caption?: string): Promise<JobPhoto>;
+  getJobPhotos(jobId: number): Promise<JobPhoto[]>;
+  deleteJobPhoto(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -135,6 +138,30 @@ export class DatabaseStorage implements IStorage {
         invoiceFooter: "Thank you for your business!\nPayment due within 30 days"
       });
     }
+  }
+
+  async addJobPhoto(jobId: number, photoPath: string, caption?: string): Promise<JobPhoto> {
+    const [photo] = await db
+      .insert(jobPhotos)
+      .values({
+        jobId,
+        photoPath,
+        caption
+      })
+      .returning();
+    return photo;
+  }
+
+  async getJobPhotos(jobId: number): Promise<JobPhoto[]> {
+    return await db
+      .select()
+      .from(jobPhotos)
+      .where(eq(jobPhotos.jobId, jobId))
+      .orderBy(desc(jobPhotos.createdAt));
+  }
+
+  async deleteJobPhoto(id: number): Promise<void> {
+    await db.delete(jobPhotos).where(eq(jobPhotos.id, id));
   }
 }
 
