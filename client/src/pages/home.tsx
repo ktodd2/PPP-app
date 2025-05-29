@@ -17,11 +17,12 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
   const [, setLocation] = useLocation();
 
   const handleInputChange = useCallback((field: keyof JobInfo, value: string | number) => {
-    setJobInfo(prev => ({
-      ...prev,
+    const newJobInfo = {
+      ...jobInfo,
       [field]: value
-    }));
-  }, [setJobInfo]);
+    };
+    setJobInfo(newJobInfo);
+  }, [jobInfo, setJobInfo]);
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
