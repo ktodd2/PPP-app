@@ -117,13 +117,13 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Problem Description</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description of Recovery and Work Performed</label>
               <input
                 type="text"
                 value={formData.problemDescription}
                 onChange={(e) => handleInputChange('problemDescription', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
-                placeholder="e.g., Rollover, Collision"
+                placeholder="e.g., Rollover recovery, Vehicle extraction"
               />
             </div>
 
