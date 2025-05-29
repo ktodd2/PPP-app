@@ -1,4 +1,4 @@
-import { jobs, users, towingServices, invoiceServices, companySettings, jobPhotos, type Job, type InsertJob, type User, type InsertUser, type TowingService, type CompanySettings, type InsertCompanySettings, type JobPhoto, type InsertJobPhoto } from "@shared/schema";
+import { jobs, users, towingServices, invoiceServices, companySettings, jobPhotos, subcontractors, type Job, type InsertJob, type User, type InsertUser, type TowingService, type CompanySettings, type InsertCompanySettings, type JobPhoto, type InsertJobPhoto, type Subcontractor } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -29,6 +29,11 @@ export interface IStorage {
   addJobPhoto(jobId: number, photoPath: string, caption?: string): Promise<JobPhoto>;
   getJobPhotos(jobId: number): Promise<JobPhoto[]>;
   deleteJobPhoto(id: number): Promise<void>;
+  
+  // Subcontractor methods
+  addJobSubcontractor(jobId: number, name: string, workPerformed: string, price: string): Promise<Subcontractor>;
+  getJobSubcontractors(jobId: number): Promise<Subcontractor[]>;
+  deleteJobSubcontractor(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -194,6 +199,30 @@ export class DatabaseStorage implements IStorage {
 
   async deleteJobPhoto(id: number): Promise<void> {
     await db.delete(jobPhotos).where(eq(jobPhotos.id, id));
+  }
+
+  async addJobSubcontractor(jobId: number, name: string, workPerformed: string, price: string): Promise<Subcontractor> {
+    const [subcontractor] = await db
+      .insert(subcontractors)
+      .values({
+        jobId,
+        name,
+        workPerformed,
+        price
+      })
+      .returning();
+    return subcontractor;
+  }
+
+  async getJobSubcontractors(jobId: number): Promise<Subcontractor[]> {
+    return await db
+      .select()
+      .from(subcontractors)
+      .where(eq(subcontractors.jobId, jobId));
+  }
+
+  async deleteJobSubcontractor(id: number): Promise<void> {
+    await db.delete(subcontractors).where(eq(subcontractors.id, id));
   }
 }
 

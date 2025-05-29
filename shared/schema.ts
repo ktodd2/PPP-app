@@ -93,10 +93,23 @@ export const jobPhotos = pgTable("job_photos", {
 export type JobPhoto = typeof jobPhotos.$inferSelect;
 export type InsertJobPhoto = typeof jobPhotos.$inferInsert;
 
+export const subcontractors = pgTable("subcontractors", {
+  id: serial("id").primaryKey(),
+  jobId: integer("job_id").references(() => jobs.id, { onDelete: "cascade" }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  workPerformed: varchar("work_performed", { length: 500 }).notNull(),
+  price: varchar("price", { length: 20 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+export type Subcontractor = typeof subcontractors.$inferSelect;
+export type InsertSubcontractor = typeof subcontractors.$inferInsert;
+
 // Relations
 export const jobsRelations = relations(jobs, ({ many }) => ({
   invoiceServices: many(invoiceServices),
   photos: many(jobPhotos),
+  subcontractors: many(subcontractors),
 }));
 
 export const towingServicesRelations = relations(towingServices, ({ many }) => ({
@@ -117,6 +130,13 @@ export const invoiceServicesRelations = relations(invoiceServices, ({ one }) => 
 export const jobPhotosRelations = relations(jobPhotos, ({ one }) => ({
   job: one(jobs, {
     fields: [jobPhotos.jobId],
+    references: [jobs.id],
+  }),
+}));
+
+export const subcontractorsRelations = relations(subcontractors, ({ one }) => ({
+  job: one(jobs, {
+    fields: [subcontractors.jobId],
     references: [jobs.id],
   }),
 }));
