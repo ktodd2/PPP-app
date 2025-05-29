@@ -4,10 +4,13 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/hooks/use-auth";
+import { ProtectedRoute } from "@/lib/protected-route";
 
 import HomePage from "@/pages/home";
 import ServicesPage from "@/pages/services";
 import InvoicePage from "@/pages/invoice";
+import AuthPage from "@/pages/auth-page";
 import Sidebar from "@/components/Sidebar";
 
 import { calculateInvoice } from '@/lib/invoice';
@@ -181,29 +184,39 @@ function Router() {
       />
 
       <Switch>
-        <Route path="/">
-          <HomePage 
-            jobInfo={jobInfo} 
-            setJobInfo={setJobInfo}
-            selectedPhotos={selectedPhotos}
-            setSelectedPhotos={setSelectedPhotos}
-          />
-        </Route>
-        <Route path="/services">
-          <ServicesPage 
-            selectedServices={selectedServices}
-            setSelectedServices={setSelectedServices}
-            jobInfo={jobInfo}
-            onCalculateInvoice={handleCalculateInvoice}
-          />
-        </Route>
-        <Route path="/invoice">
-          <InvoicePage 
-            invoice={invoice}
-            onReset={handleReset}
-            currentJobId={currentJobId}
-          />
-        </Route>
+        <ProtectedRoute 
+          path="/" 
+          component={() => (
+            <HomePage 
+              jobInfo={jobInfo} 
+              setJobInfo={setJobInfo}
+              selectedPhotos={selectedPhotos}
+              setSelectedPhotos={setSelectedPhotos}
+            />
+          )}
+        />
+        <ProtectedRoute 
+          path="/services" 
+          component={() => (
+            <ServicesPage 
+              selectedServices={selectedServices}
+              setSelectedServices={setSelectedServices}
+              jobInfo={jobInfo}
+              onCalculateInvoice={handleCalculateInvoice}
+            />
+          )}
+        />
+        <ProtectedRoute 
+          path="/invoice" 
+          component={() => (
+            <InvoicePage 
+              invoice={invoice}
+              onReset={handleReset}
+              currentJobId={currentJobId}
+            />
+          )}
+        />
+        <Route path="/auth" component={AuthPage} />
       </Switch>
     </>
   );
