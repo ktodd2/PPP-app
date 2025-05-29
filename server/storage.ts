@@ -150,7 +150,11 @@ export class DatabaseStorage implements IStorage {
     if (existing) {
       const [updated] = await db
         .update(companySettings)
-        .set({ ...insertSettings, updatedAt: new Date() })
+        .set({ 
+          ...insertSettings, 
+          userId: insertSettings.userId,
+          updatedAt: new Date() 
+        })
         .where(eq(companySettings.id, existing.id))
         .returning();
       return updated;
