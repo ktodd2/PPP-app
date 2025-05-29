@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Towing Billing App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .btn-active {
+            transform: scale(0.95);
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        .service-toggle {
+            transition: all 0.2s ease;
+        }
+        
+        .service-toggle:active {
+            transform: scale(0.95);
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-100">
+    <!-- Home Screen -->
+    <div id="homeScreen" class="screen active">
+        <div class="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 p-4">
+            <div class="max-w-md mx-auto">
+                <!-- Header -->
+                <div class="text-center mb-8 pt-8">
+                    <div class="text-6xl mb-4">🚛</div>
+                    <h1 class="text-3xl font-bold text-white mb-2">Towing Billing</h1>
+                    <p class="text-blue-100">Professional Invoice Generator</p>
+                </div>
+
+                <!-- Job Info Card -->
+                <div class="bg-white rounded-3xl p-6 mb-6 shadow-xl">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Job Information</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
+                            <input
+                                type="text"
+                                id="customerName"
+                                class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                                placeholder="Enter customer name"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Invoice Number</label>
+                            <input
+                                type="text"
+                                id="invoiceNumber"
+                                class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                                placeholder="Enter invoice number"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
+                            <input
+                                type="text"
+                                id="vehicleType"
+                                class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                                placeholder="e.g., Freightliner Cascadia"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Weight (lbs)</label>
+                            <input
+                                type="number"
+                                id="vehicleWeight"
+                                class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                                placeholder="Enter weight in pounds"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Problem Description</label>
+                            <input
+                                type="text"
+                                id="problemDescription"
+                                class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                                placeholder="e.g., Rollover, Collision"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Fuel Surcharge (%)</label>
+                            <input
+                                type="number"
+                                id="fuelSurcharge"
+                                value="15"
+                                class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                                placeholder="15"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Next Button -->
+                <button
+                    onclick="goToServices()"
+                    class="w-full bg-white text-blue-600 font-bold py-4 px-6 rounded-2xl text-lg shadow-lg active:scale-95 transition-transform"
+                >
+                    Select Services →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services Screen -->
+    <div id="servicesScreen" class="screen">
+        <div class="min-h-screen bg-gray-50">
+            <!-- Header -->
+            <div class="bg-blue-600 text-white p-4 sticky top-0 z-10">
+                <div class="flex items-center justify-between max-w-md mx-auto">
+                    <button onclick="goToHome()" class="text-2xl">←</button>
+                    <h1 class="text-xl font-bold">Select Services</h1>
+                    <div class="w-8"></div>
+                </div>
+            </div>
+
+            <div class="max-w-md mx-auto p-4">
+                <!-- Services List -->
+                <div id="servicesList" class="space-y-3 mb-6">
+                    <!-- Services will be populated by JavaScript -->
+                </div>
+
+                <!-- Calculate Button -->
+                <button
+                    onclick="calculateInvoice()"
+                    id="calculateBtn"
+                    class="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg active:scale-95 transition-transform"
+                >
+                    Calculate Invoice
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Screen -->
+    <div id="invoiceScreen" class="screen">
+        <div class="min-h-screen bg-gray-50">
+            <!-- Header -->
+            <div class="bg-green-600 text-white p-4 sticky top-0 z-10 no-print">
+                <div class="flex items-center justify-between max-w-md mx-auto">
+                    <button onclick="goToServices()" class="text-2xl">←</button>
+                    <h1 class="text-xl font-bold">Invoice</h1>
+                    <button onclick="resetApp()" class="text-sm bg-green-700 px-3 py-1 rounded-lg">New</button>
+                </div>
+            </div>
+
+            <div class="max-w-md mx-auto p-4">
+                <!-- Invoice Card -->
+                <div id="invoiceContent" class="bg-white rounded-3xl p-6 mb-6 shadow-xl">
+                    <!-- Invoice content will be populated by JavaScript -->
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3 no-print">
+                    <button
+                        onclick="shareInvoice()"
+                        class="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg active:scale-95 transition-transform"
+                    >
+                        📤 Share Invoice
+                    </button>
+                    
+                    <button
+                        onclick="printInvoice()"
+                        class="w-full bg-gray-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg active:scale-95 transition-transform"
+                    >
+                        🖨️ Print Invoice
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Service rates from your spreadsheet
+        const services = [
+            { id: 1, name: "Normal Recovery (On or Near Highway)", rate: 4.0 },
+            { id: 2, name: "Contained Recovery/Winching", rate: 4.0 },
+            { id: 3, name: "Salvage/Debris Recovery", rate: 5.5 },
+            { id: 4, name: "Handle Complete Recovery", rate: 6.0 },
+            { id: 5, name: "Total Loss Recovery", rate: 5.0 },
+            { id: 6, name: "Rollover", rate: 4.0 },
+            { id: 7, name: "Inclement Weather", rate: 2.5 },
+            { id: 8, name: "Nights/Weekends/Holidays", rate: 2.5 },
+            { id: 9, name: "Travel Within 50 Miles", rate: 3.5 },
+            { id: 10, name: "Travel Beyond 50 Miles", rate: 6.5 },
+            { id: 11, name: "Wheels Higher than Roof", rate: 2.0 },
+            { id: 12, name: "Embankment or Inclines", rate: 4.5 },
+            { id: 13, name: "Back Doors Open", rate: 2.0 },
+            { id: 14, name: "Tractor from Under Trailer", rate: 2.0 },
+            { id: 15, name: "Major Suspension Damage", rate: 6.0 },
+            { id: 16, name: "10 MPH Collision Factor", rate: 2.0 },
+            { id: 17, name: "30 MPH Collision Factor", rate: 3.0 },
+            { id: 18, name: "50 MPH Collision Factor", rate: 4.0 },
+            { id: 19, name: "70+ MPH Collision Factor", rate: 5.0 }
+        ];
+
+        let selectedServices = {};
+        let currentInvoice = null;
+
+        // Navigation functions
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function goToHome() {
+            showScreen('homeScreen');
+        }
+
+        function goToServices() {
+            showScreen('servicesScreen');
+            populateServices();
+        }
+
+        function goToInvoice() {
+            showScreen('invoiceScreen');
+        }
+
+        // Populate services list
+        function populateServices() {
+            const servicesList = document.getElementById('servicesList');
+            servicesList.innerHTML = '';
+
+            services.forEach(service => {
+                const isSelected = selectedServices[service.id] || false;
+                const serviceElement = document.createElement('div');
+                serviceElement.className = 'bg-white rounded-2xl p-4 shadow-sm';
+                serviceElement.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 pr-4">
+                            <h3 class="font-medium text-gray-800 text-sm leading-tight mb-1">
+                                ${service.name}
+                            </h3>
+                            <p class="text-green-600 font-bold text-sm">
+                                ${service.rate.toFixed(1)}¢ per lb
+                            </p>
+                        </div>
+                        <button
+                            onclick="toggleService(${service.id})"
+                            id="toggle-${service.id}"
+                            class="service-toggle px-6 py-3 rounded-xl font-bold text-sm min-w-16 ${
+                                isSelected 
+                                    ? 'bg-green-500 text-white' 
+                                    : 'bg-red-500 text-white'
+                            }"
+                        >
+                            ${isSelected ? 'ON' : 'OFF'}
+                        </button>
+                    </div>
+                `;
+                servicesList.appendChild(serviceElement);
+            });
+        }
+
+        // Toggle service selection
+        function toggleService(serviceId) {
+            selectedServices[serviceId] = !selectedServices[serviceId];
+            const button = document.getElementById(`toggle-${serviceId}`);
+            
+            if (selectedServices[serviceId]) {
+                button.textContent = 'ON';
+                button.className = 'service-toggle px-6 py-3 rounded-xl font-bold text-sm min-w-16 bg-green-500 text-white';
+            } else {
+                button.textContent = 'OFF';
+                button.className = 'service-toggle px-6 py-3 rounded-xl font-bold text-sm min-w-16 bg-red-500 text-white';
+            }
+        }
+
+        // Calculate invoice
+        function calculateInvoice() {
+            const customerName = document.getElementById('customerName').value;
+            const invoiceNumber = document.getElementById('invoiceNumber').value;
+            const vehicleType = document.getElementById('vehicleType').value;
+            const vehicleWeight = parseFloat(document.getElementById('vehicleWeight').value) || 0;
+            const problemDescription = document.getElementById('problemDescription').value;
+            const fuelSurcharge = parseFloat(document.getElementById('fuelSurcharge').value) || 0;
+
+            if (!customerName || !invoiceNumber || !vehicleWeight) {
+                alert('Please fill in Customer Name, Invoice Number, and Vehicle Weight');
+                return;
+            }
+
+            let subtotal = 0;
+            let appliedServices = [];
+
+            services.forEach(service => {
+                if (selectedServices[service.id]) {
+                    const serviceCost = (service.rate * vehicleWeight) / 100;
+                    appliedServices.push({
+                        ...service,
+                        cost: serviceCost
+                    });
+                    subtotal += serviceCost;
+                }
+            });
+
+            const fuelCost = (subtotal * fuelSurcharge) / 100;
+            const total = subtotal + fuelCost;
+
+            currentInvoice = {
+                customerName,
+                invoiceNumber,
+                vehicleType,
+                vehicleWeight,
+                problemDescription,
+                fuelSurcharge,
+                appliedServices,
+                subtotal,
+                fuelCost,
+                total,
+                date: new Date().toLocaleDateString()
+            };
+
+            displayInvoice();
+            goToInvoice();
+        }
+
+        // Display invoice
+        function displayInvoice() {
+            const invoice = currentInvoice;
+            const invoiceContent = document.getElementById('invoiceContent');
+            
+            let servicesHtml = '';
+            invoice.appliedServices.forEach(service => {
+                servicesHtml += `
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <div class="flex-1">
+                            <div class="text-sm font-medium text-gray-800">${service.name}</div>
+                            <div class="text-xs text-gray-500">${service.rate}¢/lb</div>
+                        </div>
+                        <div class="font-bold text-gray-800">
+                            $${service.cost.toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            invoiceContent.innerHTML = `
+                <!-- Invoice Header -->
+                <div class="text-center mb-6 pb-4 border-b-2 border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-800">INVOICE</h2>
+                    <p class="text-gray-600">#${invoice.invoiceNumber}</p>
+                    <p class="text-sm text-gray-500">${invoice.date}</p>
+                </div>
+
+                <!-- Customer Info -->
+                <div class="mb-6">
+                    <h3 class="font-bold text-gray-800 mb-3">Job Details</h3>
+                    <div class="space-y-2 text-sm">
+                        <div><strong>Customer:</strong> ${invoice.customerName}</div>
+                        <div><strong>Vehicle:</strong> ${invoice.vehicleType}</div>
+                        <div><strong>Weight:</strong> ${parseInt(invoice.vehicleWeight).toLocaleString()} lbs</div>
+                        <div><strong>Problem:</strong> ${invoice.problemDescription}</div>
+                    </div>
+                </div>
+
+                <!-- Services -->
+                <div class="mb-6">
+                    <h3 class="font-bold text-gray-800 mb-3">Services Provided</h3>
+                    <div class="space-y-2">
+                        ${servicesHtml}
+                    </div>
+                </div>
+
+                <!-- Totals -->
+                <div class="border-t-2 border-gray-200 pt-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium">Subtotal:</span>
+                        <span class="font-bold">$${invoice.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="font-medium">Fuel Surcharge (${invoice.fuelSurcharge}%):</span>
+                        <span class="font-bold">$${invoice.fuelCost.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xl font-bold text-green-600 pt-3 border-t border-gray-200">
+                        <span>TOTAL:</span>
+                        <span>$${invoice.total.toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Share invoice
+        function shareInvoice() {
+            if (navigator.share && currentInvoice) {
+                navigator.share({
+                    title: `Invoice #${currentInvoice.invoiceNumber}`,
+                    text: `Invoice for ${currentInvoice.customerName} - Total: $${currentInvoice.total.toFixed(2)}`
+                });
+            } else {
+                alert('Share feature not available on this device');
+            }
+        }
+
+        // Print invoice
+        function printInvoice() {
+            window.print();
+        }
+
+        // Reset app
+        function resetApp() {
+            document.getElementById('customerName').value = '';
+            document.getElementById('invoiceNumber').value = '';
+            document.getElementById('vehicleType').value = '';
+            document.getElementById('vehicleWeight').value = '';
+            document.getElementById('problemDescription').value = '';
+            document.getElementById('fuelSurcharge').value = '15';
+            selectedServices = {};
+            currentInvoice = null;
+            goToHome();
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            populateServices();
+        });
+    </script>
+</body>
+</html>
