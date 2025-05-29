@@ -26,6 +26,10 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
     enabled: !!currentJobId
   });
 
+  // Debug logging
+  console.log('Invoice page - currentJobId:', currentJobId);
+  console.log('Invoice page - jobPhotos:', jobPhotos);
+
   const handleBack = () => {
     setLocation('/services');
   };
