@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import HomePage from "@/pages/home";
 import ServicesPage from "@/pages/services";
 import InvoicePage from "@/pages/invoice";
+import Sidebar from "@/components/Sidebar";
 
 import { calculateInvoice } from '@/lib/invoice';
 import { useQuery } from '@tanstack/react-query';

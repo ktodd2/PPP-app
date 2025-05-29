@@ -1,14 +1,19 @@
-import { jobs, towingServices, invoiceServices, type Job, type InsertJob, type TowingService } from "@shared/schema";
+import { jobs, towingServices, invoiceServices, companySettings, type Job, type InsertJob, type TowingService, type CompanySettings, type InsertCompanySettings } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   createJob(job: InsertJob): Promise<Job>;
   getJob(id: number): Promise<Job | undefined>;
   getAllJobs(): Promise<Job[]>;
+  getRecentJobs(limit?: number): Promise<Job[]>;
   getTowingServices(): Promise<TowingService[]>;
+  updateTowingServiceRate(id: number, rate: string): Promise<void>;
   seedTowingServices(): Promise<void>;
   createInvoiceServices(jobId: number, services: { serviceId: number; cost: number }[]): Promise<void>;
+  getCompanySettings(): Promise<CompanySettings | undefined>;
+  updateCompanySettings(settings: InsertCompanySettings): Promise<CompanySettings>;
+  seedCompanySettings(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -29,8 +34,16 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(jobs);
   }
 
+  async getRecentJobs(limit: number = 10): Promise<Job[]> {
+    return await db.select().from(jobs).orderBy(desc(jobs.createdAt)).limit(limit);
+  }
+
   async getTowingServices(): Promise<TowingService[]> {
     return await db.select().from(towingServices);
+  }
+
+  async updateTowingServiceRate(id: number, rate: string): Promise<void> {
+    await db.update(towingServices).set({ rate }).where(eq(towingServices.id, id));
   }
 
   async seedTowingServices(): Promise<void> {
@@ -75,6 +88,43 @@ export class DatabaseStorage implements IStorage {
       }));
       
       await db.insert(invoiceServices).values(invoiceServiceData);
+    }
+  }
+
+  async getCompanySettings(): Promise<CompanySettings | undefined> {
+    const [settings] = await db.select().from(companySettings).limit(1);
+    return settings || undefined;
+  }
+
+  async updateCompanySettings(insertSettings: InsertCompanySettings): Promise<CompanySettings> {
+    const existing = await this.getCompanySettings();
+    
+    if (existing) {
+      const [updated] = await db
+        .update(companySettings)
+        .set({ ...insertSettings, updatedAt: new Date() })
+        .where(eq(companySettings.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(companySettings)
+        .values(insertSettings)
+        .returning();
+      return created;
+    }
+  }
+
+  async seedCompanySettings(): Promise<void> {
+    const existing = await this.getCompanySettings();
+    if (!existing) {
+      await db.insert(companySettings).values({
+        companyName: "Professional Towing",
+        companySubtitle: "Heavy Duty Recovery Services",
+        companyLogo: "🚛",
+        defaultFuelSurcharge: "15",
+        invoiceFooter: "Thank you for your business!\nPayment due within 30 days"
+      });
     }
   }
 }

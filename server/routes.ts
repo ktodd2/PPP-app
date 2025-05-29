@@ -4,8 +4,9 @@ import { storage } from "./storage";
 import { insertJobSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize database and seed towing services
+  // Initialize database and seed towing services and company settings
   await storage.seedTowingServices();
+  await storage.seedCompanySettings();
 
   // Get all jobs
   app.get("/api/jobs", async (req, res) => {
@@ -40,6 +41,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching services:", error);
       res.status(500).json({ error: "Failed to fetch services", details: error.message });
+    }
+  });
+
+  // Get recent jobs
+  app.get("/api/jobs/recent", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const jobs = await storage.getRecentJobs(limit);
+      res.json(jobs);
+    } catch (error) {
+      console.error("Error fetching recent jobs:", error);
+      res.status(500).json({ error: "Failed to fetch recent jobs" });
+    }
+  });
+
+  // Update service rate
+  app.patch("/api/services/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { rate } = req.body;
+      
+      await storage.updateTowingServiceRate(id, rate);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating service rate:", error);
+      res.status(400).json({ error: "Failed to update service rate" });
+    }
+  });
+
+  // Get company settings
+  app.get("/api/company", async (req, res) => {
+    try {
+      const settings = await storage.getCompanySettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching company settings:", error);
+      res.status(500).json({ error: "Failed to fetch company settings" });
+    }
+  });
+
+  // Update company settings
+  app.put("/api/company", async (req, res) => {
+    try {
+      const settings = await storage.updateCompanySettings(req.body);
+      res.json(settings);
+    } catch (error) {
+      console.error("Error updating company settings:", error);
+      res.status(400).json({ error: "Failed to update company settings" });
     }
   });
 
