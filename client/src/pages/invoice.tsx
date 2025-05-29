@@ -130,7 +130,7 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
               <p><span className="font-medium">Customer:</span> {invoice.customerName}</p>
               <p><span className="font-medium">Vehicle:</span> {invoice.vehicleType}</p>
               <p><span className="font-medium">Weight:</span> {invoice.vehicleWeight.toLocaleString()} lbs</p>
-              <p><span className="font-medium">Problem:</span> {invoice.problemDescription}</p>
+              <p><span className="font-medium">Description of Recovery and Work Performed:</span> {invoice.problemDescription}</p>
             </div>
           </div>
 
