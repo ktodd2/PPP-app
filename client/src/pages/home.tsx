@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
@@ -16,12 +16,12 @@ interface HomePageProps {
 export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
 
-  const handleInputChange = (field: keyof JobInfo, value: string | number) => {
-    setJobInfo({
-      ...jobInfo,
+  const handleInputChange = useCallback((field: keyof JobInfo, value: string | number) => {
+    setJobInfo(prev => ({
+      ...prev,
       [field]: value
-    });
-  };
+    }));
+  }, [setJobInfo]);
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -65,6 +65,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
                 onChange={(e) => handleInputChange('customerName', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter customer name"
+                key="customerName"
               />
             </div>
 
@@ -76,6 +77,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
                 onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter invoice number"
+                key="invoiceNumber"
               />
             </div>
 
@@ -87,6 +89,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
                 onChange={(e) => handleInputChange('vehicleType', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Freightliner Cascadia"
+                key="vehicleType"
               />
             </div>
 
@@ -98,6 +101,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
                 onChange={(e) => handleInputChange('vehicleWeight', parseInt(e.target.value) || 0)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter weight in pounds"
+                key="vehicleWeight"
               />
             </div>
 
@@ -109,6 +113,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
                 onChange={(e) => handleInputChange('problemDescription', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Rollover, Collision"
+                key="problemDescription"
               />
             </div>
 
@@ -120,6 +125,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
                 onChange={(e) => handleInputChange('fuelSurcharge', parseFloat(e.target.value) || 15)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
+                key="fuelSurcharge"
               />
             </div>
 
