@@ -33,11 +33,12 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
   });
 
   // Get recent jobs - MUST come before /api/jobs/:id
-  app.get("/api/jobs/recent", async (req, res) => {
+  app.get("/api/jobs/recent", requireAuth, async (req: any, res) => {
     try {
       const limitParam = req.query.limit as string;
       const limit = limitParam && !isNaN(parseInt(limitParam)) ? parseInt(limitParam) : 10;
-      const jobs = await storage.getRecentJobs(limit);
+      const userId = req.user.id;
+      const jobs = await storage.getRecentJobs(userId, limit);
       res.json(jobs);
     } catch (error) {
       console.error("Error fetching recent jobs:", error);
