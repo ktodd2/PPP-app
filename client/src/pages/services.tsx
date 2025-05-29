@@ -1,6 +1,7 @@
 import { useLocation } from 'wouter';
-import { services } from '@/lib/services';
+import { useQuery } from '@tanstack/react-query';
 import type { JobInfo } from '@/lib/invoice';
+import type { TowingService } from '@/lib/services';
 
 interface ServicesPageProps {
   selectedServices: Record<number, boolean>;
