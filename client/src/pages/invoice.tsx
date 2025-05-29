@@ -11,13 +11,19 @@ interface InvoicePageProps {
   currentJobId?: number | null;
 }
 
-export default function InvoicePage({ invoice, onReset }: InvoicePageProps) {
+export default function InvoicePage({ invoice, onReset, currentJobId }: InvoicePageProps) {
   const [, setLocation] = useLocation();
   const [isExporting, setIsExporting] = useState(false);
 
   // Fetch company settings for the invoice
   const { data: companySettings } = useQuery<CompanySettings>({
     queryKey: ['/api/company']
+  });
+
+  // Fetch job photos if currentJobId is available
+  const { data: jobPhotos = [] } = useQuery({
+    queryKey: ['/api/jobs', currentJobId, 'photos'],
+    enabled: !!currentJobId
   });
 
   const handleBack = () => {

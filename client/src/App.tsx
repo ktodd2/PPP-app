@@ -77,6 +77,21 @@ function Router() {
           },
           body: JSON.stringify({ services: selectedServicesList })
         });
+
+        // Upload photos if any were selected
+        if (selectedPhotos.length > 0) {
+          const formData = new FormData();
+          selectedPhotos.forEach((photo) => {
+            formData.append('photos', photo);
+          });
+
+          await fetch(`/api/jobs/${savedJob.id}/photos`, {
+            method: 'POST',
+            body: formData,
+          });
+        }
+
+        setCurrentJobId(savedJob.id);
         
         // Refresh the recent jobs in the sidebar
         window.dispatchEvent(new CustomEvent('jobCreated'));
@@ -169,7 +184,9 @@ function Router() {
         <Route path="/">
           <HomePage 
             jobInfo={jobInfo} 
-            setJobInfo={setJobInfo} 
+            setJobInfo={setJobInfo}
+            selectedPhotos={selectedPhotos}
+            setSelectedPhotos={setSelectedPhotos}
           />
         </Route>
         <Route path="/services">
@@ -184,6 +201,7 @@ function Router() {
           <InvoicePage 
             invoice={invoice}
             onReset={handleReset}
+            currentJobId={currentJobId}
           />
         </Route>
       </Switch>
