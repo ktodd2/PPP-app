@@ -12,6 +12,7 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<'jobs' | 'services' | 'company'>('jobs');
   const [localServiceRates, setLocalServiceRates] = useState<Record<number, string>>({});
+  const [localCompanySettings, setLocalCompanySettings] = useState<Partial<CompanySettings>>({});
   const queryClient = useQueryClient();
 
   // Listen for job creation events to refresh recent jobs
@@ -98,8 +99,24 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
     }
   };
 
-  const handleCompanySettingsChange = (settings: Partial<CompanySettings>) => {
-    updateCompanyMutation.mutate(settings);
+  const handleCompanySettingsChange = (field: string, value: string) => {
+    setLocalCompanySettings(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleCompanySettingsBlur = (field: string) => {
+    const value = localCompanySettings[field as keyof CompanySettings];
+    if (value !== undefined) {
+      updateCompanyMutation.mutate({ [field]: value });
+      // Clear local state for this field after saving
+      setLocalCompanySettings(prev => {
+        const newState = { ...prev };
+        delete newState[field as keyof CompanySettings];
+        return newState;
+      });
+    }
   };
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -256,8 +273,9 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                 </label>
                 <input
                   type="text"
-                  value={companySettings.companyName}
-                  onChange={(e) => handleCompanySettingsChange({ companyName: e.target.value })}
+                  value={localCompanySettings.companyName ?? companySettings.companyName}
+                  onChange={(e) => handleCompanySettingsChange('companyName', e.target.value)}
+                  onBlur={() => handleCompanySettingsBlur('companyName')}
                   className="w-full px-3 py-2 border rounded-lg text-sm"
                 />
               </div>
@@ -268,8 +286,9 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                 </label>
                 <input
                   type="text"
-                  value={companySettings.companySubtitle}
-                  onChange={(e) => handleCompanySettingsChange({ companySubtitle: e.target.value })}
+                  value={localCompanySettings.companySubtitle ?? companySettings.companySubtitle}
+                  onChange={(e) => handleCompanySettingsChange('companySubtitle', e.target.value)}
+                  onBlur={() => handleCompanySettingsBlur('companySubtitle')}
                   className="w-full px-3 py-2 border rounded-lg text-sm"
                 />
               </div>
@@ -306,8 +325,9 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                 <input
                   type="number"
                   step="0.1"
-                  value={companySettings.defaultFuelSurcharge}
-                  onChange={(e) => handleCompanySettingsChange({ defaultFuelSurcharge: e.target.value })}
+                  value={localCompanySettings.defaultFuelSurcharge ?? companySettings.defaultFuelSurcharge}
+                  onChange={(e) => handleCompanySettingsChange('defaultFuelSurcharge', e.target.value)}
+                  onBlur={() => handleCompanySettingsBlur('defaultFuelSurcharge')}
                   className="w-full px-3 py-2 border rounded-lg text-sm"
                 />
               </div>
@@ -318,8 +338,9 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                 </label>
                 <input
                   type="text"
-                  value={companySettings.address || ''}
-                  onChange={(e) => handleCompanySettingsChange({ address: e.target.value })}
+                  value={localCompanySettings.address ?? companySettings.address ?? ''}
+                  onChange={(e) => handleCompanySettingsChange('address', e.target.value)}
+                  onBlur={() => handleCompanySettingsBlur('address')}
                   className="w-full px-3 py-2 border rounded-lg text-sm"
                   placeholder="123 Main St, City, State"
                 />
@@ -331,8 +352,9 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                 </label>
                 <input
                   type="text"
-                  value={companySettings.phone || ''}
-                  onChange={(e) => handleCompanySettingsChange({ phone: e.target.value })}
+                  value={localCompanySettings.phone ?? companySettings.phone ?? ''}
+                  onChange={(e) => handleCompanySettingsChange('phone', e.target.value)}
+                  onBlur={() => handleCompanySettingsBlur('phone')}
                   className="w-full px-3 py-2 border rounded-lg text-sm"
                   placeholder="(555) 123-4567"
                 />
@@ -344,8 +366,9 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                 </label>
                 <input
                   type="email"
-                  value={companySettings.email || ''}
-                  onChange={(e) => handleCompanySettingsChange({ email: e.target.value })}
+                  value={localCompanySettings.email ?? companySettings.email ?? ''}
+                  onChange={(e) => handleCompanySettingsChange('email', e.target.value)}
+                  onBlur={() => handleCompanySettingsBlur('email')}
                   className="w-full px-3 py-2 border rounded-lg text-sm"
                   placeholder="info@yourtowing.com"
                 />
@@ -356,8 +379,9 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                   Invoice Footer
                 </label>
                 <textarea
-                  value={companySettings.invoiceFooter || ''}
-                  onChange={(e) => handleCompanySettingsChange({ invoiceFooter: e.target.value })}
+                  value={localCompanySettings.invoiceFooter ?? companySettings.invoiceFooter ?? ''}
+                  onChange={(e) => handleCompanySettingsChange('invoiceFooter', e.target.value)}
+                  onBlur={() => handleCompanySettingsBlur('invoiceFooter')}
                   className="w-full px-3 py-2 border rounded-lg text-sm"
                   rows={3}
                   placeholder="Thank you for your business!"
