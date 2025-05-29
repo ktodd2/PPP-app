@@ -204,9 +204,13 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
   });
 
   // Update company settings
-  app.put("/api/company", async (req, res) => {
+  app.put("/api/company", requireAuth, async (req: any, res) => {
     try {
-      const settings = await storage.updateCompanySettings(req.body);
+      const userId = req.user.id;
+      const settings = await storage.updateCompanySettings({
+        ...req.body,
+        userId
+      });
       res.json(settings);
     } catch (error) {
       console.error("Error updating company settings:", error);
