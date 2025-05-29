@@ -81,14 +81,14 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-6 sticky top-0 z-10 no-print shadow-lg">
-        <div className="flex items-center justify-between max-w-md mx-auto">
+      <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 text-white p-6 sticky top-0 z-10 no-print shadow-xl">
+        <div className="flex items-center justify-between max-w-lg mx-auto">
           <button onClick={handleBack} className="text-2xl hover:text-blue-200 transition-colors">←</button>
           <div className="text-center">
-            <h1 className="text-lg font-bold">PPP Invoice Wizard</h1>
-            <p className="text-xs text-blue-100">Generated Invoice</p>
+            <h1 className="text-xl font-bold tracking-tight">PPP Invoice Wizard</h1>
+            <p className="text-sm text-blue-100 font-light">Generated Invoice</p>
           </div>
-          <button onClick={handleReset} className="text-sm bg-blue-800 hover:bg-blue-900 px-3 py-1 rounded-lg transition-colors">New</button>
+          <button onClick={handleReset} className="text-sm bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition-colors font-medium">New</button>
         </div>
       </div>
 
