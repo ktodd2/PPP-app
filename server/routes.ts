@@ -4,10 +4,20 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { insertJobSchema } from "@shared/schema";
 
+// Authentication middleware
+function requireAuth(req: any, res: any, next: any) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+  next();
+}
+
 export async function registerRoutes(app: Express, upload: any): Promise<Server> {
-  // Initialize database and seed towing services and company settings
+  // Setup authentication
+  setupAuth(app);
+  
+  // Initialize database and seed towing services
   await storage.seedTowingServices();
-  await storage.seedCompanySettings();
 
 
 
