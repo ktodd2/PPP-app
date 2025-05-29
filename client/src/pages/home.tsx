@@ -16,12 +16,12 @@ interface HomePageProps {
 export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
 
-  const handleInputChange = useCallback((field: keyof JobInfo, value: string | number) => {
-    setJobInfo(prev => ({
-      ...prev,
+  const handleInputChange = (field: keyof JobInfo, value: string | number) => {
+    setJobInfo({
+      ...jobInfo,
       [field]: value
-    }));
-  }, []);
+    });
+  };
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
