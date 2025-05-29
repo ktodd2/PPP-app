@@ -1,22 +1,33 @@
+import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import type { JobInfo } from '@/lib/invoice';
 import type { TowingService } from '@/lib/services';
+import { Plus, X } from 'lucide-react';
 
 interface ServicesPageProps {
   selectedServices: Record<number, boolean>;
   setSelectedServices: (services: Record<number, boolean>) => void;
+  subcontractors: Array<{name: string; workPerformed: string; price: number}>;
+  setSubcontractors: (subcontractors: Array<{name: string; workPerformed: string; price: number}>) => void;
   jobInfo: JobInfo;
   onCalculateInvoice: () => void;
 }
 
 export default function ServicesPage({ 
   selectedServices, 
-  setSelectedServices, 
+  setSelectedServices,
+  subcontractors,
+  setSubcontractors,
   jobInfo,
   onCalculateInvoice 
 }: ServicesPageProps) {
   const [, setLocation] = useLocation();
+  const [newSubcontractor, setNewSubcontractor] = useState({
+    name: '',
+    workPerformed: '',
+    price: ''
+  });
 
   // Fetch services from database
   const { data: services = [], isLoading, error } = useQuery<TowingService[]>({
@@ -28,6 +39,24 @@ export default function ServicesPage({
       ...selectedServices,
       [serviceId]: !selectedServices[serviceId]
     });
+  };
+
+  const addSubcontractor = () => {
+    if (newSubcontractor.name && newSubcontractor.workPerformed && newSubcontractor.price) {
+      setSubcontractors([
+        ...subcontractors,
+        {
+          name: newSubcontractor.name,
+          workPerformed: newSubcontractor.workPerformed,
+          price: parseFloat(newSubcontractor.price)
+        }
+      ]);
+      setNewSubcontractor({ name: '', workPerformed: '', price: '' });
+    }
+  };
+
+  const removeSubcontractor = (index: number) => {
+    setSubcontractors(subcontractors.filter((_, i) => i !== index));
   };
 
   const handleBack = () => {
@@ -118,6 +147,70 @@ export default function ServicesPage({
               </div>
             );
           })}
+        </div>
+
+        {/* Subcontractors Section */}
+        <div className="mb-6">
+          <h2 className="text-lg font-bold text-gray-800 mb-4">Subcontractors</h2>
+          
+          {/* Existing Subcontractors */}
+          {subcontractors.length > 0 && (
+            <div className="space-y-3 mb-4">
+              {subcontractors.map((sub, index) => (
+                <div key={index} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-800 text-sm mb-1">{sub.name}</h3>
+                      <p className="text-xs text-gray-600 mb-2">{sub.workPerformed}</p>
+                      <p className="text-sm font-bold text-green-600">${sub.price.toFixed(2)}</p>
+                    </div>
+                    <button
+                      onClick={() => removeSubcontractor(index)}
+                      className="text-red-500 hover:text-red-700 p-1"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add New Subcontractor */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+            <h3 className="font-medium text-gray-800 text-sm mb-3">Add Subcontractor</h3>
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="Subcontractor name"
+                value={newSubcontractor.name}
+                onChange={(e) => setNewSubcontractor({...newSubcontractor, name: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              />
+              <input
+                type="text"
+                placeholder="Work performed"
+                value={newSubcontractor.workPerformed}
+                onChange={(e) => setNewSubcontractor({...newSubcontractor, workPerformed: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              />
+              <input
+                type="number"
+                step="0.01"
+                placeholder="Price ($)"
+                value={newSubcontractor.price}
+                onChange={(e) => setNewSubcontractor({...newSubcontractor, price: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              />
+              <button
+                onClick={addSubcontractor}
+                className="w-full bg-green-600 text-white font-medium py-2 px-4 rounded-lg text-sm hover:bg-green-700 transition-colors flex items-center justify-center"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Subcontractor
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Calculate Button */}

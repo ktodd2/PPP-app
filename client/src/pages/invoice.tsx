@@ -148,6 +148,24 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
             </div>
           </div>
 
+          {/* Subcontractors */}
+          {invoice.subcontractors && invoice.subcontractors.length > 0 && (
+            <div className="mb-6">
+              <h3 className="font-bold text-gray-800 mb-3">Subcontractors</h3>
+              <div className="space-y-2">
+                {invoice.subcontractors.map((sub, index) => (
+                  <div key={index} className="flex justify-between text-sm">
+                    <div className="flex-1">
+                      <span className="font-medium">{sub.name}</span>
+                      <span className="text-gray-600 ml-2">- {sub.workPerformed}</span>
+                    </div>
+                    <span className="w-16 text-right font-medium">${sub.price.toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Job Photos */}
           {currentJobId && (
             <div className="mt-6">

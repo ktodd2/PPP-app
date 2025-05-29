@@ -204,6 +204,8 @@ function Router() {
             <ServicesPage 
               selectedServices={selectedServices}
               setSelectedServices={setSelectedServices}
+              subcontractors={subcontractors}
+              setSubcontractors={setSubcontractors}
               jobInfo={jobInfo}
               onCalculateInvoice={handleCalculateInvoice}
             />
