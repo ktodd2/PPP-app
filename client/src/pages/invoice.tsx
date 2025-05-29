@@ -199,6 +199,12 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
                 <span>Subtotal:</span>
                 <span>${invoice.subtotal.toFixed(2)}</span>
               </div>
+              {invoice.subcontractorTotal > 0 && (
+                <div className="flex justify-between">
+                  <span>Subcontractors:</span>
+                  <span>${invoice.subcontractorTotal.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Fuel Surcharge ({invoice.fuelSurcharge}%):</span>
                 <span>${invoice.fuelSurchargeAmount.toFixed(2)}</span>
