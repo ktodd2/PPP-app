@@ -21,7 +21,7 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
   });
 
   // Fetch job photos if currentJobId is available
-  const { data: jobPhotos = [] } = useQuery({
+  const { data: jobPhotos = [] } = useQuery<any[]>({
     queryKey: ['/api/jobs', currentJobId, 'photos'],
     enabled: !!currentJobId
   });
