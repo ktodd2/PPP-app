@@ -1,11 +1,27 @@
-import { pgTable, text, serial, integer, decimal, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, decimal, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
+// Users table for authentication
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 255 }).notNull().unique(),
+  password: varchar("password", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
+
 // Job information schema
 export const jobs = pgTable("jobs", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
   customerName: text("customer_name").notNull(),
   invoiceNumber: text("invoice_number").notNull(),
   vehicleType: text("vehicle_type").notNull(),
@@ -45,6 +61,7 @@ export type InvoiceService = typeof invoiceServices.$inferSelect;
 // Company settings table
 export const companySettings = pgTable("company_settings", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
   companyName: text("company_name").notNull().default("Professional Towing"),
   companySubtitle: text("company_subtitle").notNull().default("Heavy Duty Recovery Services"),
   companyLogo: text("company_logo").default("🚛"),
