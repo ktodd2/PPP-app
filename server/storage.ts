@@ -1,25 +1,56 @@
-import { jobs, towingServices, invoiceServices, companySettings, jobPhotos, type Job, type InsertJob, type TowingService, type CompanySettings, type InsertCompanySettings, type JobPhoto, type InsertJobPhoto } from "@shared/schema";
+import { jobs, users, towingServices, invoiceServices, companySettings, jobPhotos, type Job, type InsertJob, type User, type InsertUser, type TowingService, type CompanySettings, type InsertCompanySettings, type JobPhoto, type InsertJobPhoto } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
+  // User authentication methods
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(insertUser: InsertUser): Promise<User>;
+  
+  // Job methods (now user-specific)
   createJob(job: InsertJob): Promise<Job>;
   getJob(id: number): Promise<any>;
-  getAllJobs(): Promise<Job[]>;
-  getRecentJobs(limit?: number): Promise<Job[]>;
+  getAllJobs(userId: number): Promise<Job[]>;
+  getRecentJobs(userId: number, limit?: number): Promise<Job[]>;
+  
+  // Service methods
   getTowingServices(): Promise<TowingService[]>;
   updateTowingServiceRate(id: number, rate: string): Promise<void>;
   seedTowingServices(): Promise<void>;
   createInvoiceServices(jobId: number, services: { serviceId: number; cost: number }[]): Promise<void>;
-  getCompanySettings(): Promise<CompanySettings | undefined>;
+  
+  // Company settings (now user-specific)
+  getCompanySettings(userId: number): Promise<CompanySettings | undefined>;
   updateCompanySettings(settings: InsertCompanySettings): Promise<CompanySettings>;
-  seedCompanySettings(): Promise<void>;
+  seedCompanySettings(userId: number): Promise<void>;
+  
+  // Photo methods
   addJobPhoto(jobId: number, photoPath: string, caption?: string): Promise<JobPhoto>;
   getJobPhotos(jobId: number): Promise<JobPhoto[]>;
   deleteJobPhoto(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
+  // User authentication methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
   async createJob(insertJob: InsertJob): Promise<Job> {
     const [job] = await db
       .insert(jobs)
