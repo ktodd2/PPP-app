@@ -73,9 +73,13 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
   });
 
   // Create a new job
-  app.post("/api/jobs", async (req, res) => {
+  app.post("/api/jobs", requireAuth, async (req, res) => {
     try {
-      const validatedData = insertJobSchema.parse(req.body);
+      const jobData = {
+        ...req.body,
+        userId: req.user?.id
+      };
+      const validatedData = insertJobSchema.parse(jobData);
       const job = await storage.createJob(validatedData);
       res.json(job);
     } catch (error) {
@@ -114,10 +118,22 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
   });
 
   // Get company settings
-  app.get("/api/company", async (req, res) => {
+  app.get("/api/company", requireAuth, async (req, res) => {
     try {
-      const settings = await storage.getCompanySettings(req.user?.id || 0);
-      res.json(settings);
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+      
+      const settings = await storage.getCompanySettings(userId);
+      if (!settings) {
+        // Create default settings for new user
+        await storage.seedCompanySettings(userId);
+        const newSettings = await storage.getCompanySettings(userId);
+        res.json(newSettings);
+      } else {
+        res.json(settings);
+      }
     } catch (error) {
       console.error("Error fetching company settings:", error);
       res.status(500).json({ error: "Failed to fetch company settings" });
@@ -125,15 +141,20 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
   });
 
   // Upload logo
-  app.post("/api/company/logo", upload.single('logo'), async (req, res) => {
+  app.post("/api/company/logo", requireAuth, upload.single('logo'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
       
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+      
       const logoPath = `/uploads/${req.file.filename}`;
       const settings = await storage.updateCompanySettings({ 
-        userId: req.user?.id || 0,
+        userId,
         companyLogo: logoPath 
       });
       res.json({ logoPath, settings });
