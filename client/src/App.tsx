@@ -32,6 +32,7 @@ function Router() {
 
   const [selectedServices, setSelectedServices] = useState<Record<number, boolean>>({});
   const [subcontractors, setSubcontractors] = useState<Array<{name: string; workPerformed: string; price: number}>>([]);
+  const [customServices, setCustomServices] = useState<Array<{name: string; price: number}>>([]);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
@@ -206,6 +207,8 @@ function Router() {
               setSelectedServices={setSelectedServices}
               subcontractors={subcontractors}
               setSubcontractors={setSubcontractors}
+              customServices={customServices}
+              setCustomServices={setCustomServices}
               jobInfo={jobInfo}
               onCalculateInvoice={handleCalculateInvoice}
             />

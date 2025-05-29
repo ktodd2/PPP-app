@@ -5,11 +5,18 @@ import type { JobInfo } from '@/lib/invoice';
 import type { TowingService } from '@/lib/services';
 import { Plus, X } from 'lucide-react';
 
+interface CustomService {
+  name: string;
+  price: number;
+}
+
 interface ServicesPageProps {
   selectedServices: Record<number, boolean>;
   setSelectedServices: (services: Record<number, boolean>) => void;
   subcontractors: Array<{name: string; workPerformed: string; price: number}>;
   setSubcontractors: (subcontractors: Array<{name: string; workPerformed: string; price: number}>) => void;
+  customServices: CustomService[];
+  setCustomServices: (services: CustomService[]) => void;
   jobInfo: JobInfo;
   onCalculateInvoice: () => void;
 }
@@ -19,6 +26,8 @@ export default function ServicesPage({
   setSelectedServices,
   subcontractors,
   setSubcontractors,
+  customServices,
+  setCustomServices,
   jobInfo,
   onCalculateInvoice 
 }: ServicesPageProps) {
@@ -26,6 +35,11 @@ export default function ServicesPage({
   const [newSubcontractor, setNewSubcontractor] = useState({
     name: '',
     workPerformed: '',
+    price: ''
+  });
+
+  const [newCustomService, setNewCustomService] = useState({
+    name: '',
     price: ''
   });
 
@@ -57,6 +71,23 @@ export default function ServicesPage({
 
   const removeSubcontractor = (index: number) => {
     setSubcontractors(subcontractors.filter((_, i) => i !== index));
+  };
+
+  const addCustomService = () => {
+    if (newCustomService.name.trim() && newCustomService.price) {
+      const price = parseFloat(newCustomService.price);
+      if (!isNaN(price) && price > 0) {
+        setCustomServices([...customServices, { 
+          name: newCustomService.name.trim(), 
+          price 
+        }]);
+        setNewCustomService({ name: '', price: '' });
+      }
+    }
+  };
+
+  const removeCustomService = (index: number) => {
+    setCustomServices(customServices.filter((_, i) => i !== index));
   };
 
   const handleBack = () => {
@@ -147,6 +178,62 @@ export default function ServicesPage({
               </div>
             );
           })}
+        </div>
+
+        {/* Custom Services Section */}
+        <div className="mb-6">
+          <h2 className="text-lg font-bold text-gray-800 mb-4">Custom Services</h2>
+          
+          {/* Existing Custom Services */}
+          {customServices.length > 0 && (
+            <div className="space-y-3 mb-4">
+              {customServices.map((service, index) => (
+                <div key={index} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-800 text-sm mb-1">{service.name}</h3>
+                      <p className="text-sm font-bold text-green-600">${service.price.toFixed(2)}</p>
+                    </div>
+                    <button
+                      onClick={() => removeCustomService(index)}
+                      className="text-red-500 hover:text-red-700 p-1"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add New Custom Service */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+            <h3 className="font-medium text-gray-800 text-sm mb-3">Add Custom Service</h3>
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="Service name"
+                value={newCustomService.name}
+                onChange={(e) => setNewCustomService({...newCustomService, name: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              />
+              <input
+                type="number"
+                step="0.01"
+                placeholder="Price ($)"
+                value={newCustomService.price}
+                onChange={(e) => setNewCustomService({...newCustomService, price: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              />
+              <button
+                onClick={addCustomService}
+                className="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center justify-center"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Custom Service
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Subcontractors Section */}
