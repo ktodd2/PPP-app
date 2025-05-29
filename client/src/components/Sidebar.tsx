@@ -6,9 +6,10 @@ import type { Job, TowingService, CompanySettings } from '@shared/schema';
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  onJobSelect?: (job: Job) => void;
 }
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<'jobs' | 'services' | 'company'>('jobs');
   const queryClient = useQueryClient();
 
@@ -151,7 +152,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <p className="text-gray-500 text-sm">No recent jobs found</p>
               ) : (
                 recentJobs.map(job => (
-                  <div key={job.id} className="bg-gray-50 rounded-lg p-3 border">
+                  <div 
+                    key={job.id} 
+                    className="bg-gray-50 rounded-lg p-3 border cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                    onClick={() => {
+                      if (onJobSelect) {
+                        onJobSelect(job);
+                        onClose();
+                      }
+                    }}
+                  >
                     <div className="font-medium text-gray-800">#{job.invoiceNumber}</div>
                     <div className="text-sm text-gray-600">{job.customerName}</div>
                     <div className="text-sm text-gray-500">{job.vehicleType}</div>

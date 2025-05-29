@@ -12,9 +12,12 @@ import Sidebar from "@/components/Sidebar";
 
 import { calculateInvoice } from '@/lib/invoice';
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import type { JobInfo, Invoice } from '@/lib/invoice';
+import type { Job } from '@shared/schema';
 
 function Router() {
+  const [location, setLocation] = useLocation();
   const [jobInfo, setJobInfo] = useState<JobInfo>({
     customerName: '',
     invoiceNumber: '',
@@ -81,6 +84,55 @@ function Router() {
     }
   };
 
+  const handleJobSelect = async (job: Job) => {
+    // Restore job info
+    setJobInfo({
+      customerName: job.customerName,
+      invoiceNumber: job.invoiceNumber,
+      vehicleType: job.vehicleType,
+      vehicleWeight: job.vehicleWeight,
+      problemDescription: job.problemDescription,
+      fuelSurcharge: parseFloat(job.fuelSurcharge)
+    });
+
+    // Fetch job services and rebuild the invoice
+    try {
+      const response = await fetch(`/api/jobs/${job.id}`);
+      if (response.ok) {
+        const jobWithServices = await response.json();
+        
+        // Restore selected services
+        const restoredServices: Record<number, boolean> = {};
+        if (jobWithServices.invoiceServices) {
+          jobWithServices.invoiceServices.forEach((invoiceService: any) => {
+            restoredServices[invoiceService.serviceId] = true;
+          });
+        }
+        setSelectedServices(restoredServices);
+        
+        // Recreate the invoice
+        const restoredInvoice = calculateInvoice(
+          {
+            customerName: job.customerName,
+            invoiceNumber: job.invoiceNumber,
+            vehicleType: job.vehicleType,
+            vehicleWeight: job.vehicleWeight,
+            problemDescription: job.problemDescription,
+            fuelSurcharge: parseFloat(job.fuelSurcharge)
+          },
+          restoredServices,
+          services
+        );
+        setInvoice(restoredInvoice);
+        
+        // Navigate to invoice page
+        setLocation('/invoice');
+      }
+    } catch (error) {
+      console.error('Failed to restore job:', error);
+    }
+  };
+
   const handleReset = () => {
     setJobInfo({
       customerName: '',
@@ -107,7 +159,8 @@ function Router() {
       {/* Sidebar */}
       <Sidebar 
         isOpen={sidebarOpen} 
-        onClose={() => setSidebarOpen(false)} 
+        onClose={() => setSidebarOpen(false)}
+        onJobSelect={handleJobSelect}
       />
 
       <Switch>

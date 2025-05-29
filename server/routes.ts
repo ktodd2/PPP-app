@@ -19,6 +19,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get a specific job with its services
+  app.get("/api/jobs/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const job = await storage.getJob(id);
+      if (!job) {
+        return res.status(404).json({ error: "Job not found" });
+      }
+      res.json(job);
+    } catch (error) {
+      console.error("Error fetching job:", error);
+      res.status(500).json({ error: "Failed to fetch job" });
+    }
+  });
+
   // Create a new job
   app.post("/api/jobs", async (req, res) => {
     try {

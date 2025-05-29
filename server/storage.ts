@@ -27,7 +27,18 @@ export class DatabaseStorage implements IStorage {
 
   async getJob(id: number): Promise<Job | undefined> {
     const [job] = await db.select().from(jobs).where(eq(jobs.id, id));
-    return job || undefined;
+    if (!job) return undefined;
+    
+    // Get the invoice services for this job
+    const services = await db
+      .select()
+      .from(invoiceServices)
+      .where(eq(invoiceServices.jobId, id));
+    
+    return {
+      ...job,
+      invoiceServices: services
+    };
   }
 
   async getAllJobs(): Promise<Job[]> {
