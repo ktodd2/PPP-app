@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 import type { Invoice } from '@/lib/invoice';
+import type { CompanySettings } from '@shared/schema';
 import { shareInvoice, printInvoice, exportToPDF } from '@/lib/invoice';
 
 interface InvoicePageProps {
@@ -11,6 +13,11 @@ interface InvoicePageProps {
 export default function InvoicePage({ invoice, onReset }: InvoicePageProps) {
   const [, setLocation] = useLocation();
   const [isExporting, setIsExporting] = useState(false);
+
+  // Fetch company settings for the invoice
+  const { data: companySettings } = useQuery<CompanySettings>({
+    queryKey: ['/api/company']
+  });
 
   const handleBack = () => {
     setLocation('/services');
@@ -76,9 +83,12 @@ export default function InvoicePage({ invoice, onReset }: InvoicePageProps) {
         <div className="bg-white rounded-3xl p-6 mb-6 shadow-xl">
           {/* Company Header */}
           <div className="text-center mb-6 pb-4 border-b-2 border-gray-100">
-            <div className="text-4xl mb-2">🚛</div>
-            <h1 className="text-2xl font-bold text-gray-800">Professional Towing</h1>
-            <p className="text-gray-600 text-sm">Heavy Duty Recovery Services</p>
+            <div className="text-4xl mb-2">{companySettings?.companyLogo || '🚛'}</div>
+            <h1 className="text-2xl font-bold text-gray-800">{companySettings?.companyName || 'Professional Towing'}</h1>
+            <p className="text-gray-600 text-sm">{companySettings?.companySubtitle || 'Heavy Duty Recovery Services'}</p>
+            {companySettings?.address && <p className="text-gray-600 text-xs">{companySettings.address}</p>}
+            {companySettings?.phone && <p className="text-gray-600 text-xs">{companySettings.phone}</p>}
+            {companySettings?.email && <p className="text-gray-600 text-xs">{companySettings.email}</p>}
           </div>
 
           {/* Invoice Header */}
@@ -130,8 +140,16 @@ export default function InvoicePage({ invoice, onReset }: InvoicePageProps) {
 
           {/* Footer */}
           <div className="text-center text-xs text-gray-500 mt-6 pt-4 border-t border-gray-100">
-            <p>Thank you for your business!</p>
-            <p>Payment due within 30 days</p>
+            {companySettings?.invoiceFooter ? (
+              companySettings.invoiceFooter.split('\n').map((line, index) => (
+                <p key={index}>{line}</p>
+              ))
+            ) : (
+              <>
+                <p>Thank you for your business!</p>
+                <p>Payment due within 30 days</p>
+              </>
+            )}
           </div>
         </div>
 
