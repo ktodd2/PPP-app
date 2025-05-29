@@ -141,6 +141,24 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
             </div>
           </div>
 
+          {/* Job Photos */}
+          {jobPhotos && jobPhotos.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Job Photos</h3>
+              <div className="grid grid-cols-5 gap-2">
+                {jobPhotos.map((photo: any, index: number) => (
+                  <div key={photo.id} className="aspect-square">
+                    <img
+                      src={photo.photoPath}
+                      alt={`Job photo ${index + 1}`}
+                      className="w-full h-full object-cover rounded border border-gray-200"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Totals */}
           <div className="border-t-2 border-gray-100 pt-4">
             <div className="space-y-2 text-sm">
