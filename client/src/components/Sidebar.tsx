@@ -99,13 +99,19 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
       });
 
       if (response.ok) {
+        const result = await response.json();
+        console.log('Logo uploaded successfully:', result);
         queryClient.invalidateQueries({ queryKey: ['/api/company'] });
       } else {
-        console.error('Failed to upload logo');
+        const error = await response.text();
+        console.error('Failed to upload logo:', error);
       }
     } catch (error) {
       console.error('Error uploading logo:', error);
     }
+    
+    // Clear the input
+    event.target.value = '';
   };
 
   if (!isOpen) return null;
@@ -255,7 +261,7 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                   Company Logo
                 </label>
                 <div className="space-y-2">
-                  {companySettings.companyLogo && (
+                  {companySettings.companyLogo && companySettings.companyLogo.startsWith('/uploads/') && (
                     <div className="flex items-center space-x-2">
                       <img 
                         src={companySettings.companyLogo} 
