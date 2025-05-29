@@ -85,7 +85,7 @@ export function printInvoice() {
   window.print();
 }
 
-export async function exportToPDF(invoice: Invoice) {
+export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = []) {
   try {
     // Create a temporary div for PDF generation
     const tempDiv = document.createElement('div');
@@ -162,6 +162,20 @@ export async function exportToPDF(invoice: Invoice) {
             </div>
           </div>
         </div>
+
+        ${jobPhotos && jobPhotos.length > 0 ? `
+        <!-- Job Photos -->
+        <div style="margin-top: 30px; page-break-inside: avoid;">
+          <h3 style="font-weight: bold; color: #1f2937; margin-bottom: 15px; font-size: 18px;">Job Photos</h3>
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
+            ${jobPhotos.map(photo => `
+              <div style="aspect-ratio: 1; border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden;">
+                <img src="${photo.photoPath}" style="width: 100%; height: 100%; object-fit: cover;" alt="Job photo" />
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
 
         <!-- Footer -->
         <div style="text-align: center; font-size: 12px; color: #6b7280; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
