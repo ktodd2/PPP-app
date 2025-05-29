@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import type { Job, TowingService, CompanySettings } from '@shared/schema';
@@ -11,6 +11,16 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<'jobs' | 'services' | 'company'>('jobs');
   const queryClient = useQueryClient();
+
+  // Listen for job creation events to refresh recent jobs
+  useEffect(() => {
+    const handleJobCreated = () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs/recent'] });
+    };
+
+    window.addEventListener('jobCreated', handleJobCreated);
+    return () => window.removeEventListener('jobCreated', handleJobCreated);
+  }, [queryClient]);
 
   // Fetch recent jobs
   const { data: recentJobs = [] } = useQuery<Job[]>({

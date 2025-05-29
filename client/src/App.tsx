@@ -32,9 +32,53 @@ function Router() {
     queryKey: ['/api/services'],
   });
 
-  const handleCalculateInvoice = () => {
+  const handleCalculateInvoice = async () => {
     const calculatedInvoice = calculateInvoice(jobInfo, selectedServices, services);
     setInvoice(calculatedInvoice);
+    
+    // Save job to database
+    try {
+      const response = await fetch('/api/jobs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerName: jobInfo.customerName,
+          invoiceNumber: jobInfo.invoiceNumber,
+          vehicleType: jobInfo.vehicleType,
+          vehicleWeight: jobInfo.vehicleWeight,
+          problemDescription: jobInfo.problemDescription,
+          fuelSurcharge: jobInfo.fuelSurcharge.toString(),
+          subtotal: calculatedInvoice.subtotal.toString(),
+          fuelSurchargeAmount: calculatedInvoice.fuelSurchargeAmount.toString(),
+          total: calculatedInvoice.total.toString()
+        })
+      });
+      
+      if (response.ok) {
+        const savedJob = await response.json();
+        
+        // Save the selected services for this job
+        const selectedServicesList = calculatedInvoice.services.map(service => ({
+          serviceId: service.id,
+          cost: service.cost
+        }));
+        
+        await fetch(`/api/jobs/${savedJob.id}/services`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ services: selectedServicesList })
+        });
+        
+        // Refresh the recent jobs in the sidebar
+        window.dispatchEvent(new CustomEvent('jobCreated'));
+      }
+    } catch (error) {
+      console.error('Failed to save job:', error);
+    }
   };
 
   const handleReset = () => {
