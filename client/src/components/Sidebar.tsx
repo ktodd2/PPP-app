@@ -11,6 +11,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<'jobs' | 'services' | 'company'>('jobs');
+  const [localServiceRates, setLocalServiceRates] = useState<Record<number, string>>({});
   const queryClient = useQueryClient();
 
   // Listen for job creation events to refresh recent jobs
@@ -78,7 +79,23 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
   });
 
   const handleServiceRateChange = (id: number, rate: string) => {
-    updateServiceMutation.mutate({ id, rate });
+    setLocalServiceRates(prev => ({
+      ...prev,
+      [id]: rate
+    }));
+  };
+
+  const handleServiceRateBlur = (id: number) => {
+    const rate = localServiceRates[id];
+    if (rate !== undefined) {
+      updateServiceMutation.mutate({ id, rate });
+      // Clear local state for this service after saving
+      setLocalServiceRates(prev => {
+        const newState = { ...prev };
+        delete newState[id];
+        return newState;
+      });
+    }
   };
 
   const handleCompanySettingsChange = (settings: Partial<CompanySettings>) => {
@@ -216,8 +233,9 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                     <input
                       type="number"
                       step="0.1"
-                      value={service.rate}
+                      value={localServiceRates[service.id] ?? service.rate}
                       onChange={(e) => handleServiceRateChange(service.id, e.target.value)}
+                      onBlur={() => handleServiceRateBlur(service.id)}
                       className="w-20 px-2 py-1 border rounded text-sm"
                     />
                     <span className="text-sm text-gray-600">¢ per lb</span>
