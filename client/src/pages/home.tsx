@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { useLocation } from 'wouter';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
