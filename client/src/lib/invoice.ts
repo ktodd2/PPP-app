@@ -15,6 +15,13 @@ export interface ServiceWithCost extends TowingService {
   cost: number;
 }
 
+export interface SubcontractorItem {
+  id?: number;
+  name: string;
+  workPerformed: string;
+  price: number;
+}
+
 export interface Invoice {
   customerName: string;
   invoiceNumber: string;
@@ -23,7 +30,9 @@ export interface Invoice {
   problemDescription: string;
   fuelSurcharge: number;
   services: ServiceWithCost[];
+  subcontractors: SubcontractorItem[];
   subtotal: number;
+  subcontractorTotal: number;
   fuelSurchargeAmount: number;
   total: number;
   date: string;
@@ -32,7 +41,8 @@ export interface Invoice {
 export function calculateInvoice(
   jobInfo: JobInfo,
   selectedServices: Record<number, boolean>,
-  allServices: TowingService[]
+  allServices: TowingService[],
+  subcontractors: SubcontractorItem[] = []
 ): Invoice {
   const selectedServicesList = allServices.filter(service => selectedServices[service.id]);
   
@@ -47,13 +57,16 @@ export function calculateInvoice(
   });
 
   const subtotal = servicesWithCosts.reduce((sum, service) => sum + service.cost, 0);
+  const subcontractorTotal = subcontractors.reduce((sum, sub) => sum + sub.price, 0);
   const fuelSurchargeAmount = subtotal * (jobInfo.fuelSurcharge / 100);
-  const total = subtotal + fuelSurchargeAmount;
+  const total = subtotal + subcontractorTotal + fuelSurchargeAmount;
 
   return {
     ...jobInfo,
     services: servicesWithCosts,
+    subcontractors,
     subtotal,
+    subcontractorTotal,
     fuelSurchargeAmount,
     total,
     date: new Date().toLocaleDateString()

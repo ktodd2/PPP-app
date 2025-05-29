@@ -31,6 +31,7 @@ function Router() {
   });
 
   const [selectedServices, setSelectedServices] = useState<Record<number, boolean>>({});
+  const [subcontractors, setSubcontractors] = useState<Array<{name: string; workPerformed: string; price: number}>>([]);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
@@ -43,7 +44,7 @@ function Router() {
   });
 
   const handleCalculateInvoice = async () => {
-    const calculatedInvoice = calculateInvoice(jobInfo, selectedServices, services);
+    const calculatedInvoice = calculateInvoice(jobInfo, selectedServices, services, subcontractors);
     setInvoice(calculatedInvoice);
     
     // Save job to database
