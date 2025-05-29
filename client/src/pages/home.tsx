@@ -41,18 +41,20 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 p-4">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 p-4">
+      <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="text-center mb-8 pt-8">
-          <div className="text-6xl mb-4">🚛</div>
-          <h1 className="text-3xl font-bold text-white mb-2">Towing Billing</h1>
-          <p className="text-blue-100">Professional Invoice Generator</p>
+          <div className="inline-block bg-white/10 backdrop-blur-sm rounded-2xl px-8 py-6 mb-6">
+            <h1 className="text-5xl font-bold text-white mb-3 tracking-tight">PPP</h1>
+            <h2 className="text-xl font-medium text-blue-100 mb-2 tracking-wide">(Price per Pound)</h2>
+            <h3 className="text-lg text-blue-200 font-light">Invoice Wizard</h3>
+          </div>
         </div>
 
         {/* Job Info Card */}
-        <div className="bg-white rounded-3xl p-6 mb-6 shadow-xl">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Job Information</h2>
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 mb-6 shadow-2xl border border-white/20">
+          <h2 className="text-2xl font-semibold text-slate-800 mb-6 border-b border-slate-200 pb-3">Job Information</h2>
           
           <div className="space-y-4">
             <div>

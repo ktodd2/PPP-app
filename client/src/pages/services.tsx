@@ -48,10 +48,10 @@ export default function ServicesPage({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl mb-4">🚛</div>
-          <p className="text-gray-600">Loading services...</p>
+          <h1 className="text-3xl font-bold text-white mb-2">PPP Invoice Wizard</h1>
+          <p className="text-blue-100">Loading services...</p>
         </div>
       </div>
     );
@@ -77,10 +77,13 @@ export default function ServicesPage({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-blue-600 text-white p-4 sticky top-0 z-10">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          <button onClick={handleBack} className="text-2xl">←</button>
-          <h1 className="text-xl font-bold">Select Services</h1>
+      <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 text-white p-6 sticky top-0 z-10 shadow-xl">
+        <div className="flex items-center justify-between max-w-lg mx-auto">
+          <button onClick={handleBack} className="text-2xl hover:text-blue-200 transition-colors">←</button>
+          <div className="text-center">
+            <h1 className="text-xl font-bold tracking-tight">PPP Invoice Wizard</h1>
+            <p className="text-sm text-blue-100 font-light">Select Services</p>
+          </div>
           <div className="w-8"></div>
         </div>
       </div>
