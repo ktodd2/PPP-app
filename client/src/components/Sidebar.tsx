@@ -85,6 +85,29 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
     updateCompanyMutation.mutate(settings);
   };
 
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('logo', file);
+
+    try {
+      const response = await fetch('/api/company/logo', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/company'] });
+      } else {
+        console.error('Failed to upload logo');
+      }
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (

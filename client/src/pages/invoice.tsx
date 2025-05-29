@@ -83,7 +83,21 @@ export default function InvoicePage({ invoice, onReset }: InvoicePageProps) {
         <div className="bg-white rounded-3xl p-6 mb-6 shadow-xl">
           {/* Company Header */}
           <div className="text-center mb-6 pb-4 border-b-2 border-gray-100">
-            <div className="text-4xl mb-2">{companySettings?.companyLogo || '🚛'}</div>
+            <div className="mb-2">
+              {companySettings?.companyLogo ? (
+                companySettings.companyLogo.startsWith('/uploads/') ? (
+                  <img 
+                    src={companySettings.companyLogo} 
+                    alt="Company Logo" 
+                    className="w-16 h-16 object-contain mx-auto"
+                  />
+                ) : (
+                  <div className="text-4xl">{companySettings.companyLogo}</div>
+                )
+              ) : (
+                <div className="text-4xl">🚛</div>
+              )}
+            </div>
             <h1 className="text-2xl font-bold text-gray-800">{companySettings?.companyName || 'Professional Towing'}</h1>
             <p className="text-gray-600 text-sm">{companySettings?.companySubtitle || 'Heavy Duty Recovery Services'}</p>
             {companySettings?.address && <p className="text-gray-600 text-xs">{companySettings.address}</p>}
