@@ -46,26 +46,26 @@ function Router() {
 
   return (
     <Switch>
-      <Route path="/" component={() => 
+      <Route path="/">
         <HomePage 
           jobInfo={jobInfo} 
           setJobInfo={setJobInfo} 
         />
-      } />
-      <Route path="/services" component={() => 
+      </Route>
+      <Route path="/services">
         <ServicesPage 
           selectedServices={selectedServices}
           setSelectedServices={setSelectedServices}
           jobInfo={jobInfo}
           onCalculateInvoice={handleCalculateInvoice}
         />
-      } />
-      <Route path="/invoice" component={() => 
+      </Route>
+      <Route path="/invoice">
         <InvoicePage 
           invoice={invoice}
           onReset={handleReset}
         />
-      } />
+      </Route>
     </Switch>
   );
 }
