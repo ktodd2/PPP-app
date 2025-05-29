@@ -8,6 +8,7 @@ import { shareInvoice, printInvoice, exportToPDF } from '@/lib/invoice';
 interface InvoicePageProps {
   invoice: Invoice | null;
   onReset: () => void;
+  currentJobId?: number | null;
 }
 
 export default function InvoicePage({ invoice, onReset }: InvoicePageProps) {

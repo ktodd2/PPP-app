@@ -30,6 +30,8 @@ function Router() {
   const [selectedServices, setSelectedServices] = useState<Record<number, boolean>>({});
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
+  const [currentJobId, setCurrentJobId] = useState<number | null>(null);
 
   const { data: services = [] } = useQuery({
     queryKey: ['/api/services'],
