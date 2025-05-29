@@ -75,12 +75,12 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getAllJobs(): Promise<Job[]> {
-    return await db.select().from(jobs);
+  async getAllJobs(userId: number): Promise<Job[]> {
+    return await db.select().from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt));
   }
 
-  async getRecentJobs(limit: number = 10): Promise<Job[]> {
-    const result = await db.select().from(jobs).orderBy(desc(jobs.createdAt)).limit(limit);
+  async getRecentJobs(userId: number, limit: number = 10): Promise<Job[]> {
+    const result = await db.select().from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)).limit(limit);
     return result;
   }
 
@@ -134,13 +134,13 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getCompanySettings(): Promise<CompanySettings | undefined> {
-    const [settings] = await db.select().from(companySettings).limit(1);
+  async getCompanySettings(userId: number): Promise<CompanySettings | undefined> {
+    const [settings] = await db.select().from(companySettings).where(eq(companySettings.userId, userId)).limit(1);
     return settings || undefined;
   }
 
   async updateCompanySettings(insertSettings: InsertCompanySettings): Promise<CompanySettings> {
-    const existing = await this.getCompanySettings();
+    const existing = await this.getCompanySettings(insertSettings.userId!);
     
     if (existing) {
       const [updated] = await db
@@ -158,10 +158,11 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async seedCompanySettings(): Promise<void> {
-    const existing = await this.getCompanySettings();
+  async seedCompanySettings(userId: number): Promise<void> {
+    const existing = await this.getCompanySettings(userId);
     if (!existing) {
       await db.insert(companySettings).values({
+        userId,
         companyName: "Professional Towing",
         companySubtitle: "Heavy Duty Recovery Services",
         companyLogo: "🚛",
