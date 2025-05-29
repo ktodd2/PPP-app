@@ -98,7 +98,7 @@ export default function ServicesPage({
                       {service.name}
                     </h3>
                     <p className="text-green-600 font-bold text-sm">
-                      {parseFloat(service.rate).toFixed(1)}¢ per lb
+                      {parseFloat(service.rate as string).toFixed(1)}¢ per lb
                     </p>
                   </div>
                   <button

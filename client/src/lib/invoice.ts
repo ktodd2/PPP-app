@@ -35,9 +35,11 @@ export function calculateInvoice(
   const selectedServicesList = allServices.filter(service => selectedServices[service.id]);
   
   const servicesWithCosts: ServiceWithCost[] = selectedServicesList.map(service => {
-    const cost = (jobInfo.vehicleWeight * service.rate) / 100;
+    const rate = typeof service.rate === 'string' ? parseFloat(service.rate) : service.rate;
+    const cost = (jobInfo.vehicleWeight * rate) / 100;
     return {
       ...service,
+      rate,
       cost
     };
   });

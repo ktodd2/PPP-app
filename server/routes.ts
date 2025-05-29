@@ -33,11 +33,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get towing services
   app.get("/api/services", async (req, res) => {
     try {
+      console.log("Fetching services from database...");
       const services = await storage.getTowingServices();
+      console.log("Services fetched:", services.length);
       res.json(services);
     } catch (error) {
       console.error("Error fetching services:", error);
-      res.status(500).json({ error: "Failed to fetch services" });
+      res.status(500).json({ error: "Failed to fetch services", details: error.message });
     }
   });
 
