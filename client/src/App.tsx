@@ -38,6 +38,8 @@ function Router() {
 
   const { data: services = [] } = useQuery({
     queryKey: ['/api/services'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
   const handleCalculateInvoice = async () => {
