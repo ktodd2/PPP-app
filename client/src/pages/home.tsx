@@ -11,10 +11,10 @@ export default function HomePage({ jobInfo, setJobInfo }: HomePageProps) {
   const [, setLocation] = useLocation();
 
   const handleInputChange = (field: keyof JobInfo, value: string | number) => {
-    setJobInfo({
-      ...jobInfo,
+    setJobInfo(prev => ({
+      ...prev,
       [field]: value
-    });
+    }));
   };
 
   const handleNext = () => {
