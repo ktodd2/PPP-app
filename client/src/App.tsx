@@ -26,6 +26,7 @@ function Router() {
 
   const [selectedServices, setSelectedServices] = useState<Record<number, boolean>>({});
   const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const { data: services = [] } = useQuery({
     queryKey: ['/api/services'],
@@ -50,28 +51,44 @@ function Router() {
   };
 
   return (
-    <Switch>
-      <Route path="/">
-        <HomePage 
-          jobInfo={jobInfo} 
-          setJobInfo={setJobInfo} 
-        />
-      </Route>
-      <Route path="/services">
-        <ServicesPage 
-          selectedServices={selectedServices}
-          setSelectedServices={setSelectedServices}
-          jobInfo={jobInfo}
-          onCalculateInvoice={handleCalculateInvoice}
-        />
-      </Route>
-      <Route path="/invoice">
-        <InvoicePage 
-          invoice={invoice}
-          onReset={handleReset}
-        />
-      </Route>
-    </Switch>
+    <>
+      {/* Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="fixed top-4 right-4 z-40 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+      >
+        ⚙️
+      </button>
+
+      {/* Sidebar */}
+      <Sidebar 
+        isOpen={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
+      />
+
+      <Switch>
+        <Route path="/">
+          <HomePage 
+            jobInfo={jobInfo} 
+            setJobInfo={setJobInfo} 
+          />
+        </Route>
+        <Route path="/services">
+          <ServicesPage 
+            selectedServices={selectedServices}
+            setSelectedServices={setSelectedServices}
+            jobInfo={jobInfo}
+            onCalculateInvoice={handleCalculateInvoice}
+          />
+        </Route>
+        <Route path="/invoice">
+          <InvoicePage 
+            invoice={invoice}
+            onReset={handleReset}
+          />
+        </Route>
+      </Switch>
+    </>
   );
 }
 

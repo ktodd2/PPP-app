@@ -33,10 +33,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   // Mutation for updating service rates
   const updateServiceMutation = useMutation({
     mutationFn: async ({ id, rate }: { id: number; rate: string }) => {
-      return apiRequest(`/api/services/${id}`, {
+      const response = await fetch(`/api/services/${id}`, {
         method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ rate })
       });
+      if (!response.ok) throw new Error('Failed to update service rate');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/services'] });
@@ -46,10 +51,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   // Mutation for updating company settings
   const updateCompanyMutation = useMutation({
     mutationFn: async (settings: Partial<CompanySettings>) => {
-      return apiRequest('/api/company', {
+      const response = await fetch('/api/company', {
         method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(settings)
       });
+      if (!response.ok) throw new Error('Failed to update company settings');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/company'] });
