@@ -68,7 +68,7 @@ export class DatabaseStorage implements IStorage {
     // Seed with the services from the original app
     const servicesToSeed = [
       { name: "Normal Recovery (On or Near Highway)", rate: "4.0" },
-      { name: "Contained Recovery/Winching", rate: "4.0" },
+      { name: "Contained Recovery/Winching", rate: "4.5" },
       { name: "Salvage/Debris Recovery", rate: "5.5" },
       { name: "Handle Complete Recovery", rate: "6.0" },
       { name: "Total Loss Recovery", rate: "5.0" },
