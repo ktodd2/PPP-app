@@ -34,6 +34,18 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
+  // Get job photos (must come before general job route)
+  app.get("/api/jobs/:id/photos", async (req, res) => {
+    try {
+      const jobId = parseInt(req.params.id);
+      const photos = await storage.getJobPhotos(jobId);
+      res.json(photos);
+    } catch (error) {
+      console.error("Error fetching photos:", error);
+      res.status(500).json({ error: "Failed to fetch photos" });
+    }
+  });
+
   // Get a specific job with its services
   app.get("/api/jobs/:id", async (req, res) => {
     try {
@@ -141,17 +153,7 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Get job photos
-  app.get("/api/jobs/:id/photos", async (req, res) => {
-    try {
-      const jobId = parseInt(req.params.id);
-      const photos = await storage.getJobPhotos(jobId);
-      res.json(photos);
-    } catch (error) {
-      console.error("Error fetching photos:", error);
-      res.status(500).json({ error: "Failed to fetch photos" });
-    }
-  });
+
 
   // Delete job photo
   app.delete("/api/photos/:id", async (req, res) => {
