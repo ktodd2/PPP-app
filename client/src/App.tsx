@@ -98,8 +98,8 @@ function Router() {
 
         setCurrentJobId(savedJob.id);
         
-        // Refresh the recent jobs in the sidebar
-        window.dispatchEvent(new CustomEvent('jobCreated'));
+        // Invalidate and refetch recent jobs cache
+        queryClient.invalidateQueries({ queryKey: ['/api/jobs/recent'] });
       }
     } catch (error) {
       console.error('Failed to save job:', error);
