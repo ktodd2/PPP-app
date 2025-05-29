@@ -19,6 +19,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get recent jobs - MUST come before /api/jobs/:id
+  app.get("/api/jobs/recent", async (req, res) => {
+    try {
+      const limitParam = req.query.limit as string;
+      const limit = limitParam && !isNaN(parseInt(limitParam)) ? parseInt(limitParam) : 10;
+      const jobs = await storage.getRecentJobs(limit);
+      res.json(jobs);
+    } catch (error) {
+      console.error("Error fetching recent jobs:", error);
+      res.status(500).json({ error: "Failed to fetch recent jobs" });
+    }
+  });
+
   // Get a specific job with its services
   app.get("/api/jobs/:id", async (req, res) => {
     try {
@@ -59,18 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get recent jobs
-  app.get("/api/jobs/recent", async (req, res) => {
-    try {
-      const limitParam = req.query.limit as string;
-      const limit = limitParam && !isNaN(parseInt(limitParam)) ? parseInt(limitParam) : 10;
-      const jobs = await storage.getRecentJobs(limit);
-      res.json(jobs);
-    } catch (error) {
-      console.error("Error fetching recent jobs:", error);
-      res.status(500).json({ error: "Failed to fetch recent jobs" });
-    }
-  });
+
 
   // Update service rate
   app.patch("/api/services/:id", async (req, res) => {
