@@ -4,7 +4,7 @@ import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   createJob(job: InsertJob): Promise<Job>;
-  getJob(id: number): Promise<Job | undefined>;
+  getJob(id: number): Promise<any>;
   getAllJobs(): Promise<Job[]>;
   getRecentJobs(limit?: number): Promise<Job[]>;
   getTowingServices(): Promise<TowingService[]>;
@@ -25,7 +25,7 @@ export class DatabaseStorage implements IStorage {
     return job;
   }
 
-  async getJob(id: number): Promise<Job | undefined> {
+  async getJob(id: number): Promise<any> {
     const [job] = await db.select().from(jobs).where(eq(jobs.id, id));
     if (!job) return undefined;
     
@@ -46,7 +46,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRecentJobs(limit: number = 10): Promise<Job[]> {
-    return await db.select().from(jobs).orderBy(desc(jobs.createdAt)).limit(limit);
+    const result = await db.select().from(jobs).orderBy(desc(jobs.createdAt)).limit(limit);
+    return result;
   }
 
   async getTowingServices(): Promise<TowingService[]> {

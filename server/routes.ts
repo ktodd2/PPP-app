@@ -62,7 +62,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get recent jobs
   app.get("/api/jobs/recent", async (req, res) => {
     try {
-      const limit = parseInt(req.query.limit as string) || 10;
+      const limitParam = req.query.limit as string;
+      const limit = limitParam && !isNaN(parseInt(limitParam)) ? parseInt(limitParam) : 10;
       const jobs = await storage.getRecentJobs(limit);
       res.json(jobs);
     } catch (error) {
