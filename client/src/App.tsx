@@ -9,8 +9,8 @@ import HomePage from "@/pages/home";
 import ServicesPage from "@/pages/services";
 import InvoicePage from "@/pages/invoice";
 
-import { services } from '@/lib/services';
 import { calculateInvoice } from '@/lib/invoice';
+import { useQuery } from '@tanstack/react-query';
 import type { JobInfo, Invoice } from '@/lib/invoice';
 
 function Router() {
@@ -25,6 +25,10 @@ function Router() {
 
   const [selectedServices, setSelectedServices] = useState<Record<number, boolean>>({});
   const [invoice, setInvoice] = useState<Invoice | null>(null);
+
+  const { data: services = [] } = useQuery({
+    queryKey: ['/api/services'],
+  });
 
   const handleCalculateInvoice = () => {
     const calculatedInvoice = calculateInvoice(jobInfo, selectedServices, services);

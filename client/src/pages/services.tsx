@@ -18,6 +18,11 @@ export default function ServicesPage({
 }: ServicesPageProps) {
   const [, setLocation] = useLocation();
 
+  // Fetch services from database
+  const { data: services = [], isLoading, error } = useQuery<TowingService[]>({
+    queryKey: ['/api/services'],
+  });
+
   const toggleService = (serviceId: number) => {
     setSelectedServices({
       ...selectedServices,
@@ -40,6 +45,34 @@ export default function ServicesPage({
     onCalculateInvoice();
     setLocation('/invoice');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🚛</div>
+          <p className="text-gray-600">Loading services...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">❌</div>
+          <p className="text-red-600 mb-4">Error loading services</p>
+          <button
+            onClick={() => setLocation('/')}
+            className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -65,7 +98,7 @@ export default function ServicesPage({
                       {service.name}
                     </h3>
                     <p className="text-green-600 font-bold text-sm">
-                      {service.rate.toFixed(1)}¢ per lb
+                      {parseFloat(service.rate).toFixed(1)}¢ per lb
                     </p>
                   </div>
                   <button
