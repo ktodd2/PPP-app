@@ -42,6 +42,29 @@ export const invoiceServices = pgTable("invoice_services", {
 
 export type InvoiceService = typeof invoiceServices.$inferSelect;
 
+// Company settings table
+export const companySettings = pgTable("company_settings", {
+  id: serial("id").primaryKey(),
+  companyName: text("company_name").notNull().default("Professional Towing"),
+  companySubtitle: text("company_subtitle").notNull().default("Heavy Duty Recovery Services"),
+  companyLogo: text("company_logo").default("🚛"),
+  address: text("address"),
+  phone: text("phone"),
+  email: text("email"),
+  website: text("website"),
+  defaultFuelSurcharge: decimal("default_fuel_surcharge", { precision: 5, scale: 2 }).notNull().default("15"),
+  invoiceFooter: text("invoice_footer").default("Thank you for your business!\nPayment due within 30 days"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertCompanySettingsSchema = createInsertSchema(companySettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type InsertCompanySettings = z.infer<typeof insertCompanySettingsSchema>;
+export type CompanySettings = typeof companySettings.$inferSelect;
+
 // Relations
 export const jobsRelations = relations(jobs, ({ many }) => ({
   invoiceServices: many(invoiceServices),

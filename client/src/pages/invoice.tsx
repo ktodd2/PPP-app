@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useLocation } from 'wouter';
 import type { Invoice } from '@/lib/invoice';
-import { shareInvoice, printInvoice } from '@/lib/invoice';
+import { shareInvoice, printInvoice, exportToPDF } from '@/lib/invoice';
 
 interface InvoicePageProps {
   invoice: Invoice | null;
@@ -9,6 +10,7 @@ interface InvoicePageProps {
 
 export default function InvoicePage({ invoice, onReset }: InvoicePageProps) {
   const [, setLocation] = useLocation();
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleBack = () => {
     setLocation('/services');
@@ -27,6 +29,19 @@ export default function InvoicePage({ invoice, onReset }: InvoicePageProps) {
 
   const handlePrint = () => {
     printInvoice();
+  };
+
+  const handleExportPDF = async () => {
+    if (!invoice) return;
+    
+    setIsExporting(true);
+    try {
+      await exportToPDF(invoice);
+    } catch (error) {
+      alert('Failed to export PDF. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   if (!invoice) {
@@ -122,6 +137,14 @@ export default function InvoicePage({ invoice, onReset }: InvoicePageProps) {
 
         {/* Action Buttons */}
         <div className="space-y-3 no-print">
+          <button
+            onClick={handleExportPDF}
+            disabled={isExporting}
+            className="w-full bg-red-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isExporting ? '📄 Generating PDF...' : '📄 Export PDF'}
+          </button>
+          
           <button
             onClick={handleShare}
             className="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg active:scale-95 transition-transform"
