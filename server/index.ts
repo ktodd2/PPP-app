@@ -24,14 +24,21 @@ const upload = multer({
   storage: uploadStorage,
   fileFilter: (req, file, cb) => {
     // Check file extension
-    const allowedExtensions = /\.(jpg|jpeg|png|gif|webp)$/i;
+    const allowedExtensions = /\.(jpg|jpeg|png|gif|webp|svg)$/i;
     const extname = allowedExtensions.test(file.originalname);
     
-    // Check MIME type
-    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    const mimetype = allowedMimeTypes.includes(file.mimetype);
+    // Check MIME type - be more flexible with image types
+    const allowedMimeTypes = [
+      'image/jpeg', 
+      'image/jpg', 
+      'image/png', 
+      'image/gif', 
+      'image/webp',
+      'image/svg+xml'
+    ];
+    const mimetype = allowedMimeTypes.includes(file.mimetype) || file.mimetype.startsWith('image/');
     
-    if (mimetype && extname) {
+    if (mimetype || extname) {
       return cb(null, true);
     } else {
       cb(new Error(`File type not allowed. Got: ${file.mimetype}, ${file.originalname}`));

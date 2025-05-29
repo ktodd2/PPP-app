@@ -142,20 +142,28 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
           </div>
 
           {/* Job Photos */}
-          {jobPhotos && jobPhotos.length > 0 && (
+          {currentJobId && (
             <div className="mt-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">Job Photos</h3>
-              <div className="grid grid-cols-5 gap-2">
-                {jobPhotos.map((photo: any, index: number) => (
-                  <div key={photo.id} className="aspect-square">
-                    <img
-                      src={photo.photoPath}
-                      alt={`Job photo ${index + 1}`}
-                      className="w-full h-full object-cover rounded border border-gray-200"
-                    />
-                  </div>
-                ))}
-              </div>
+              {jobPhotos && jobPhotos.length > 0 ? (
+                <div className="grid grid-cols-5 gap-2">
+                  {jobPhotos.map((photo: any, index: number) => (
+                    <div key={photo.id} className="aspect-square">
+                      <img
+                        src={photo.photoPath}
+                        alt={`Job photo ${index + 1}`}
+                        className="w-full h-full object-cover rounded border border-gray-200"
+                        onError={(e) => {
+                          console.error('Failed to load image:', photo.photoPath);
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">No photos uploaded for this job.</p>
+              )}
             </div>
           )}
 
