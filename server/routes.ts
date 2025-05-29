@@ -24,7 +24,7 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
   // Get all jobs
   app.get("/api/jobs", async (req, res) => {
     try {
-      const jobs = await storage.getAllJobs();
+      const jobs = await storage.getAllJobs(req.user?.id || 0);
       res.json(jobs);
     } catch (error) {
       console.error("Error fetching jobs:", error);
@@ -116,7 +116,7 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
   // Get company settings
   app.get("/api/company", async (req, res) => {
     try {
-      const settings = await storage.getCompanySettings();
+      const settings = await storage.getCompanySettings(req.user?.id || 0);
       res.json(settings);
     } catch (error) {
       console.error("Error fetching company settings:", error);
@@ -132,7 +132,10 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
       }
       
       const logoPath = `/uploads/${req.file.filename}`;
-      const settings = await storage.updateCompanySettings({ companyLogo: logoPath });
+      const settings = await storage.updateCompanySettings({ 
+        userId: req.user?.id || 0,
+        companyLogo: logoPath 
+      });
       res.json({ logoPath, settings });
     } catch (error) {
       console.error("Error uploading logo:", error);
