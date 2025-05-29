@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from 'react';
+import { useState } from 'react';
 import { useLocation } from 'wouter';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
@@ -15,29 +15,22 @@ interface HomePageProps {
 
 export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
+  
+  // Local form state to prevent re-render issues
+  const [formData, setFormData] = useState({
+    customerName: jobInfo.customerName,
+    invoiceNumber: jobInfo.invoiceNumber,
+    vehicleType: jobInfo.vehicleType,
+    vehicleWeight: jobInfo.vehicleWeight,
+    problemDescription: jobInfo.problemDescription,
+    fuelSurcharge: jobInfo.fuelSurcharge
+  });
 
-  const handleCustomerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJobInfo({ ...jobInfo, customerName: e.target.value });
-  };
-
-  const handleInvoiceNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJobInfo({ ...jobInfo, invoiceNumber: e.target.value });
-  };
-
-  const handleVehicleTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJobInfo({ ...jobInfo, vehicleType: e.target.value });
-  };
-
-  const handleVehicleWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJobInfo({ ...jobInfo, vehicleWeight: parseInt(e.target.value) || 0 });
-  };
-
-  const handleProblemDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJobInfo({ ...jobInfo, problemDescription: e.target.value });
-  };
-
-  const handleFuelSurchargeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJobInfo({ ...jobInfo, fuelSurcharge: parseFloat(e.target.value) || 15 });
+  const handleInputChange = (field: string, value: string | number) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,6 +47,11 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
   };
 
   const handleNext = () => {
+    // Update parent state with form data before navigating
+    setJobInfo({
+      ...jobInfo,
+      ...formData
+    });
     setLocation('/services');
   };
 
@@ -78,8 +76,8 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
               <input
                 type="text"
-                value={jobInfo.customerName}
-                onChange={handleCustomerNameChange}
+                value={formData.customerName}
+                onChange={(e) => handleInputChange('customerName', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter customer name"
               />
@@ -89,8 +87,8 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Invoice Number</label>
               <input
                 type="text"
-                value={jobInfo.invoiceNumber}
-                onChange={handleInvoiceNumberChange}
+                value={formData.invoiceNumber}
+                onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter invoice number"
               />
@@ -100,8 +98,8 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
               <input
                 type="text"
-                value={jobInfo.vehicleType}
-                onChange={handleVehicleTypeChange}
+                value={formData.vehicleType}
+                onChange={(e) => handleInputChange('vehicleType', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Freightliner Cascadia"
               />
@@ -111,8 +109,8 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Weight (lbs)</label>
               <input
                 type="number"
-                value={jobInfo.vehicleWeight || ''}
-                onChange={handleVehicleWeightChange}
+                value={formData.vehicleWeight || ''}
+                onChange={(e) => handleInputChange('vehicleWeight', parseInt(e.target.value) || 0)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter weight in pounds"
               />
@@ -122,8 +120,8 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Problem Description</label>
               <input
                 type="text"
-                value={jobInfo.problemDescription}
-                onChange={handleProblemDescriptionChange}
+                value={formData.problemDescription}
+                onChange={(e) => handleInputChange('problemDescription', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Rollover, Collision"
               />
@@ -133,8 +131,8 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Fuel Surcharge (%)</label>
               <input
                 type="number"
-                value={jobInfo.fuelSurcharge}
-                onChange={handleFuelSurchargeChange}
+                value={formData.fuelSurcharge}
+                onChange={(e) => handleInputChange('fuelSurcharge', parseFloat(e.target.value) || 15)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
               />
