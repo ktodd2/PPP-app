@@ -157,8 +157,8 @@ function Router() {
     }
   };
 
-  const stableSetJobInfo = useCallback((newJobInfo: JobInfo) => {
-    setJobInfo(prev => ({ ...prev, ...newJobInfo }));
+  const updateJobInfo = useCallback((updates: Partial<JobInfo>) => {
+    setJobInfo(current => ({ ...current, ...updates }));
   }, []);
 
   const handleReset = () => {
@@ -201,7 +201,7 @@ function Router() {
           component={() => (
             <HomePage 
               jobInfo={jobInfo} 
-              setJobInfo={setJobInfo}
+              setJobInfo={updateJobInfo}
               selectedPhotos={selectedPhotos}
               setSelectedPhotos={setSelectedPhotos}
             />

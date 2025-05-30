@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 
 interface HomePageProps {
   jobInfo: JobInfo;
-  setJobInfo: (jobInfo: JobInfo) => void;
+  setJobInfo: (updates: Partial<JobInfo>) => void;
   selectedPhotos?: File[];
   setSelectedPhotos?: (photos: File[]) => void;
 }
@@ -52,7 +52,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
               <Input
                 value={jobInfo.customerName}
-                onChange={(e) => setJobInfo({ ...jobInfo, customerName: e.target.value })}
+                onChange={(e) => setJobInfo({ customerName: e.target.value })}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter customer name"
               />
@@ -62,7 +62,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Invoice Number</label>
               <Input
                 value={jobInfo.invoiceNumber}
-                onChange={(e) => setJobInfo({ ...jobInfo, invoiceNumber: e.target.value })}
+                onChange={(e) => setJobInfo({ invoiceNumber: e.target.value })}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter invoice number"
               />
@@ -72,7 +72,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
               <Input
                 value={jobInfo.vehicleType}
-                onChange={(e) => setJobInfo({ ...jobInfo, vehicleType: e.target.value })}
+                onChange={(e) => setJobInfo({ vehicleType: e.target.value })}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Freightliner Cascadia"
               />
@@ -83,7 +83,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <Input
                 type="number"
                 value={jobInfo.vehicleWeight || ''}
-                onChange={(e) => setJobInfo({ ...jobInfo, vehicleWeight: parseInt(e.target.value) || 0 })}
+                onChange={(e) => setJobInfo({ vehicleWeight: parseInt(e.target.value) || 0 })}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter weight in pounds"
               />
@@ -93,7 +93,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Description of Recovery and Work Performed</label>
               <Input
                 value={jobInfo.problemDescription}
-                onChange={(e) => setJobInfo({ ...jobInfo, problemDescription: e.target.value })}
+                onChange={(e) => setJobInfo({ problemDescription: e.target.value })}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Rollover recovery, Vehicle extraction"
               />
@@ -104,7 +104,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <Input
                 type="number"
                 value={jobInfo.fuelSurcharge || ''}
-                onChange={(e) => setJobInfo({ ...jobInfo, fuelSurcharge: parseFloat(e.target.value) || 0 })}
+                onChange={(e) => setJobInfo({ fuelSurcharge: parseFloat(e.target.value) || 0 })}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
               />
