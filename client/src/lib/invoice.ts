@@ -129,17 +129,22 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
     }
 
     // Convert photos to data URLs
-    const photoDataUrls: Array<any & { dataUrl: string }> = [];
+    const photoDataUrls: Array<{ id: number; photoPath: string; dataUrl: string }> = [];
     for (const photo of jobPhotos) {
       try {
         const response = await fetch(photo.photoPath);
         const blob = await response.blob();
-        const dataUrl = await new Promise<string>((resolve) => {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
           reader.readAsDataURL(blob);
         });
-        photoDataUrls.push({ ...photo, dataUrl });
+        photoDataUrls.push({ 
+          id: photo.id, 
+          photoPath: photo.photoPath, 
+          dataUrl 
+        });
       } catch (error) {
         console.warn('Failed to load photo for PDF export:', error);
       }
