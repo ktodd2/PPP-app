@@ -128,6 +128,23 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
       }
     }
 
+    // Convert photos to data URLs
+    const photoDataUrls = [];
+    for (const photo of jobPhotos) {
+      try {
+        const response = await fetch(photo.photoPath);
+        const blob = await response.blob();
+        const dataUrl = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+        photoDataUrls.push({ ...photo, dataUrl });
+      } catch (error) {
+        console.warn('Failed to load photo for PDF export:', error);
+      }
+    }
+
     // Create a temporary div for PDF generation
     const tempDiv = document.createElement('div');
     tempDiv.style.position = 'absolute';
@@ -241,46 +258,52 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
         ` : ''}
 
         <!-- Totals -->
-        <div style="border-top: 2px solid #e5e7eb; padding-top: 20px;">
-          <div style="text-align: right; font-size: 14px; line-height: 1.8;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <span style="color: #4b5563;">Subtotal:</span>
-              <span style="color: #374151; font-weight: 500;">$${invoice.subtotal.toFixed(2)}</span>
-            </div>
+        <div style="border-top: 2px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
+          <table style="width: 100%; font-size: 14px;">
+            <tr>
+              <td style="text-align: right; padding: 4px 0; color: #4b5563;">Subtotal:</td>
+              <td style="text-align: right; padding: 4px 0 4px 20px; color: #374151; font-weight: 500; width: 100px;">$${invoice.subtotal.toFixed(2)}</td>
+            </tr>
             ${invoice.customServicesTotal > 0 ? `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <span style="color: #4b5563;">Custom Services:</span>
-              <span style="color: #374151; font-weight: 500;">$${invoice.customServicesTotal.toFixed(2)}</span>
-            </div>
+            <tr>
+              <td style="text-align: right; padding: 4px 0; color: #4b5563;">Custom Services:</td>
+              <td style="text-align: right; padding: 4px 0 4px 20px; color: #374151; font-weight: 500;">$${invoice.customServicesTotal.toFixed(2)}</td>
+            </tr>
             ` : ''}
             ${invoice.subcontractorTotal > 0 ? `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <span style="color: #4b5563;">Subcontractors:</span>
-              <span style="color: #374151; font-weight: 500;">$${invoice.subcontractorTotal.toFixed(2)}</span>
-            </div>
+            <tr>
+              <td style="text-align: right; padding: 4px 0; color: #4b5563;">Subcontractors:</td>
+              <td style="text-align: right; padding: 4px 0 4px 20px; color: #374151; font-weight: 500;">$${invoice.subcontractorTotal.toFixed(2)}</td>
+            </tr>
             ` : ''}
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <span style="color: #4b5563;">Fuel Surcharge (${invoice.fuelSurcharge}%):</span>
-              <span style="color: #374151; font-weight: 500;">$${invoice.fuelSurchargeAmount.toFixed(2)}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #d1d5db; font-size: 18px;">
-              <span style="color: #1f2937; font-weight: bold;">Total:</span>
-              <span style="color: #1f2937; font-weight: bold;">$${invoice.total.toFixed(2)}</span>
-            </div>
-          </div>
+            <tr>
+              <td style="text-align: right; padding: 4px 0; color: #4b5563;">Fuel Surcharge (${invoice.fuelSurcharge}%):</td>
+              <td style="text-align: right; padding: 4px 0 4px 20px; color: #374151; font-weight: 500;">$${invoice.fuelSurchargeAmount.toFixed(2)}</td>
+            </tr>
+            <tr style="border-top: 1px solid #d1d5db;">
+              <td style="text-align: right; padding: 12px 0 4px 0; color: #1f2937; font-weight: bold; font-size: 18px;">Total:</td>
+              <td style="text-align: right; padding: 12px 0 4px 20px; color: #1f2937; font-weight: bold; font-size: 18px;">$${invoice.total.toFixed(2)}</td>
+            </tr>
+          </table>
         </div>
 
-        ${jobPhotos && jobPhotos.length > 0 ? `
+        ${photoDataUrls && photoDataUrls.length > 0 ? `
         <!-- Job Photos -->
         <div style="margin-top: 30px; page-break-inside: avoid;">
           <h3 style="font-weight: bold; color: #1f2937; margin-bottom: 15px; font-size: 18px;">Job Photos</h3>
-          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
-            ${jobPhotos.map(photo => `
-              <div style="aspect-ratio: 1; border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden;">
-                <img src="${photo.photoPath}" style="width: 100%; height: 100%; object-fit: cover;" alt="Job photo" />
-              </div>
+          <table style="width: 100%; border-collapse: separate; border-spacing: 10px;">
+            ${Array.from({ length: Math.ceil(photoDataUrls.length / 3) }, (_, rowIndex) => `
+              <tr>
+                ${photoDataUrls.slice(rowIndex * 3, (rowIndex + 1) * 3).map(photo => `
+                  <td style="width: 33.33%; border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden; height: 120px; text-align: center; vertical-align: middle; padding: 0;">
+                    <img src="${photo.dataUrl}" style="max-width: 100%; max-height: 120px; object-fit: cover;" alt="Job photo" />
+                  </td>
+                `).join('')}
+                ${photoDataUrls.slice(rowIndex * 3, (rowIndex + 1) * 3).length < 3 ? 
+                  Array.from({ length: 3 - photoDataUrls.slice(rowIndex * 3, (rowIndex + 1) * 3).length }, () => '<td style="width: 33.33%;"></td>').join('') : ''}
+              </tr>
             `).join('')}
-          </div>
+          </table>
         </div>
         ` : ''}
 
