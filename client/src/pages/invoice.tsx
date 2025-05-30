@@ -39,9 +39,9 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
     setLocation('/');
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (invoice) {
-      shareInvoice(invoice);
+      await shareInvoice(invoice, jobPhotos, companySettings);
     }
   };
 

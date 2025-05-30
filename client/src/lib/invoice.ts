@@ -79,24 +79,30 @@ export function calculateInvoice(
   };
 }
 
-export function shareInvoice(invoice: Invoice) {
-  const invoiceText = `Invoice #${invoice.invoiceNumber}\nCustomer: ${invoice.customerName}\nTotal: $${invoice.total.toFixed(2)}`;
-  
-  if (navigator.share) {
-    navigator.share({
-      title: 'Towing Invoice',
-      text: invoiceText
-    }).catch(() => {
-      // User cancelled share or share failed, no need to show error
-    });
-  } else {
-    // Fallback for browsers that don't support Web Share API
-    navigator.clipboard.writeText(invoiceText).then(() => {
-      alert('Invoice details copied to clipboard!');
-    }).catch(() => {
-      // Fallback if clipboard API is not available
-      prompt('Copy this invoice text:', invoiceText);
-    });
+export async function shareInvoice(invoice: Invoice, jobPhotos: any[] = [], companySettings: any = null) {
+  try {
+    // Generate PDF and share it
+    await exportToPDF(invoice, jobPhotos, companySettings);
+  } catch (error) {
+    // Fallback to text sharing if PDF export fails
+    const invoiceText = `Invoice #${invoice.invoiceNumber}\nCustomer: ${invoice.customerName}\nTotal: $${invoice.total.toFixed(2)}`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'Towing Invoice',
+        text: invoiceText
+      }).catch(() => {
+        // User cancelled share or share failed, no need to show error
+      });
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      navigator.clipboard.writeText(invoiceText).then(() => {
+        alert('Invoice details copied to clipboard!');
+      }).catch(() => {
+        // Fallback if clipboard API is not available
+        prompt('Copy this invoice text:', invoiceText);
+      });
+    }
   }
 }
 
@@ -106,6 +112,22 @@ export function printInvoice() {
 
 export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], companySettings: any = null) {
   try {
+    // Convert logo to data URL if it exists
+    let logoDataUrl = '';
+    if (companySettings?.companyLogo && companySettings.companyLogo.startsWith('/uploads/')) {
+      try {
+        const response = await fetch(companySettings.companyLogo);
+        const blob = await response.blob();
+        logoDataUrl = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+      } catch (error) {
+        console.warn('Failed to load logo for PDF export:', error);
+      }
+    }
+
     // Create a temporary div for PDF generation
     const tempDiv = document.createElement('div');
     tempDiv.style.position = 'absolute';
@@ -121,8 +143,8 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
       <div style="max-width: 170mm; margin: 0 auto;">
         <!-- Company Header -->
         <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #e5e7eb;">
-          ${companySettings?.companyLogo && companySettings.companyLogo.startsWith('/uploads/') 
-            ? `<img src="${companySettings.companyLogo}" alt="Company Logo" style="width: 64px; height: 64px; object-fit: contain; margin: 0 auto 10px auto; display: block;" />`
+          ${logoDataUrl 
+            ? `<img src="${logoDataUrl}" alt="Company Logo" style="width: 64px; height: 64px; object-fit: contain; margin: 0 auto 10px auto; display: block;" />`
             : `<div style="font-size: 48px; margin-bottom: 10px;">${companySettings?.companyLogo || '🚛'}</div>`
           }
           <h1 style="font-size: 28px; font-weight: bold; color: #1f2937; margin: 0 0 8px 0;">${companySettings?.companyName || 'Professional Towing'}</h1>

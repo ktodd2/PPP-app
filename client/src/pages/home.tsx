@@ -132,7 +132,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <input
                 type="number"
                 value={formData.fuelSurcharge}
-                onChange={(e) => handleInputChange('fuelSurcharge', parseFloat(e.target.value) || 15)}
+                onChange={(e) => handleInputChange('fuelSurcharge', parseFloat(e.target.value) || 0)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
               />
