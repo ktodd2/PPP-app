@@ -1,10 +1,8 @@
 import { useLocation } from 'wouter';
-import { useState } from 'react';
+import { useCallback } from 'react';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 interface HomePageProps {
   jobInfo: JobInfo;
@@ -15,31 +13,23 @@ interface HomePageProps {
 
 export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
-  
-  const updateField = (field: keyof JobInfo, value: string | number) => {
-    const updatedJobInfo = {
-      ...jobInfo,
-      [field]: value
-    };
-    setJobInfo(updatedJobInfo);
-  };
 
-  const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (setSelectedPhotos) {
       setSelectedPhotos([...selectedPhotos, ...files]);
     }
-  };
+  }, [selectedPhotos, setSelectedPhotos]);
 
-  const removePhoto = (index: number) => {
+  const removePhoto = useCallback((index: number) => {
     if (setSelectedPhotos) {
       setSelectedPhotos(selectedPhotos.filter((_, i) => i !== index));
     }
-  };
+  }, [selectedPhotos, setSelectedPhotos]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     setLocation('/services');
-  };
+  }, [setLocation]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 p-4">
@@ -62,7 +52,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
               <Input
                 value={jobInfo.customerName}
-                onChange={(e) => updateField('customerName', e.target.value)}
+                onChange={(e) => setJobInfo({ ...jobInfo, customerName: e.target.value })}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter customer name"
               />
@@ -72,7 +62,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Invoice Number</label>
               <Input
                 value={jobInfo.invoiceNumber}
-                onChange={(e) => updateField('invoiceNumber', e.target.value)}
+                onChange={(e) => setJobInfo({ ...jobInfo, invoiceNumber: e.target.value })}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter invoice number"
               />
@@ -82,7 +72,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
               <Input
                 value={jobInfo.vehicleType}
-                onChange={(e) => updateField('vehicleType', e.target.value)}
+                onChange={(e) => setJobInfo({ ...jobInfo, vehicleType: e.target.value })}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Freightliner Cascadia"
               />
@@ -93,7 +83,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <Input
                 type="number"
                 value={jobInfo.vehicleWeight || ''}
-                onChange={(e) => updateField('vehicleWeight', parseInt(e.target.value) || 0)}
+                onChange={(e) => setJobInfo({ ...jobInfo, vehicleWeight: parseInt(e.target.value) || 0 })}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter weight in pounds"
               />
@@ -103,7 +93,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Description of Recovery and Work Performed</label>
               <Input
                 value={jobInfo.problemDescription}
-                onChange={(e) => updateField('problemDescription', e.target.value)}
+                onChange={(e) => setJobInfo({ ...jobInfo, problemDescription: e.target.value })}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Rollover recovery, Vehicle extraction"
               />
@@ -114,7 +104,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <Input
                 type="number"
                 value={jobInfo.fuelSurcharge || ''}
-                onChange={(e) => updateField('fuelSurcharge', parseFloat(e.target.value) || 0)}
+                onChange={(e) => setJobInfo({ ...jobInfo, fuelSurcharge: parseFloat(e.target.value) || 0 })}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
               />
