@@ -157,6 +157,10 @@ function Router() {
     }
   };
 
+  const stableSetJobInfo = useCallback((newJobInfo: JobInfo) => {
+    setJobInfo(newJobInfo);
+  }, []);
+
   const handleReset = () => {
     setJobInfo({
       customerName: '',
@@ -196,7 +200,7 @@ function Router() {
           component={() => (
             <HomePage 
               jobInfo={jobInfo} 
-              setJobInfo={setJobInfo}
+              setJobInfo={stableSetJobInfo}
               selectedPhotos={selectedPhotos}
               setSelectedPhotos={setSelectedPhotos}
             />
