@@ -15,48 +15,16 @@ interface HomePageProps {
 export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
 
-  const handleCustomerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJobInfo(prev => {
-      if (prev.customerName === e.target.value) return prev;
-      return { ...prev, customerName: e.target.value };
-    });
-  };
-
-  const handleInvoiceNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJobInfo(prev => {
-      if (prev.invoiceNumber === e.target.value) return prev;
-      return { ...prev, invoiceNumber: e.target.value };
-    });
-  };
-
-  const handleVehicleTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJobInfo(prev => {
-      if (prev.vehicleType === e.target.value) return prev;
-      return { ...prev, vehicleType: e.target.value };
-    });
-  };
-
-  const handleVehicleWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = parseInt(e.target.value) || 0;
-    setJobInfo(prev => {
-      if (prev.vehicleWeight === newValue) return prev;
-      return { ...prev, vehicleWeight: newValue };
-    });
-  };
-
-  const handleProblemDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJobInfo(prev => {
-      if (prev.problemDescription === e.target.value) return prev;
-      return { ...prev, problemDescription: e.target.value };
-    });
-  };
-
-  const handleFuelSurchargeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = parseFloat(e.target.value) || 0;
-    setJobInfo(prev => {
-      if (prev.fuelSurcharge === newValue) return prev;
-      return { ...prev, fuelSurcharge: newValue };
-    });
+  const updateField = (field: keyof JobInfo, value: string) => {
+    const newJobInfo = { ...jobInfo };
+    if (field === 'vehicleWeight') {
+      newJobInfo[field] = value === '' ? 0 : parseInt(value) || 0;
+    } else if (field === 'fuelSurcharge') {
+      newJobInfo[field] = value === '' ? 0 : parseFloat(value) || 0;
+    } else {
+      (newJobInfo as any)[field] = value;
+    }
+    setJobInfo(newJobInfo);
   };
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,7 +66,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <input
                 type="text"
                 value={jobInfo.customerName}
-                onChange={handleCustomerNameChange}
+                onChange={(e) => updateField('customerName', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter customer name"
               />
@@ -109,7 +77,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <input
                 type="text"
                 value={jobInfo.invoiceNumber}
-                onChange={handleInvoiceNumberChange}
+                onChange={(e) => updateField('invoiceNumber', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter invoice number"
               />
@@ -120,7 +88,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <input
                 type="text"
                 value={jobInfo.vehicleType}
-                onChange={handleVehicleTypeChange}
+                onChange={(e) => updateField('vehicleType', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Freightliner Cascadia"
               />
@@ -129,9 +97,9 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Weight (lbs)</label>
               <input
-                type="number"
+                type="text"
                 value={jobInfo.vehicleWeight || ''}
-                onChange={handleVehicleWeightChange}
+                onChange={(e) => updateField('vehicleWeight', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter weight in pounds"
               />
@@ -142,7 +110,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <input
                 type="text"
                 value={jobInfo.problemDescription}
-                onChange={handleProblemDescriptionChange}
+                onChange={(e) => updateField('problemDescription', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Rollover recovery, Vehicle extraction"
               />
@@ -151,9 +119,9 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Fuel Surcharge (%)</label>
               <input
-                type="number"
+                type="text"
                 value={jobInfo.fuelSurcharge}
-                onChange={handleFuelSurchargeChange}
+                onChange={(e) => updateField('fuelSurcharge', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
               />
