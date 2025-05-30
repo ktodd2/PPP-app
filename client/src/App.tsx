@@ -195,12 +195,13 @@ function Router() {
       />
 
       <Switch>
+        <Route path="/auth" component={AuthPage} />
         <ProtectedRoute 
           path="/" 
           component={() => (
             <HomePage 
               jobInfo={jobInfo} 
-              setJobInfo={stableSetJobInfo}
+              setJobInfo={setJobInfo}
               selectedPhotos={selectedPhotos}
               setSelectedPhotos={setSelectedPhotos}
             />
@@ -231,7 +232,6 @@ function Router() {
             />
           )}
         />
-        <Route path="/auth" component={AuthPage} />
       </Switch>
     </>
   );
