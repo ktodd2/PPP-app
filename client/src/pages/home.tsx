@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
@@ -15,13 +15,29 @@ interface HomePageProps {
 
 export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
+  const [localJobInfo, setLocalJobInfo] = useState(jobInfo);
+  
+  // Debounced update to parent state
+  const debouncedUpdate = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return (newInfo: JobInfo) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          setJobInfo(newInfo);
+        }, 100);
+      };
+    })(),
+    [setJobInfo]
+  );
   
   const handleInputChange = (field: string, value: string | number) => {
-    // Update parent state directly to prevent focus loss
-    setJobInfo({
-      ...jobInfo,
+    const newJobInfo = {
+      ...localJobInfo,
       [field]: value
-    });
+    };
+    setLocalJobInfo(newJobInfo);
+    debouncedUpdate(newJobInfo);
   };
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,7 +53,14 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
     }
   };
 
+  // Sync local state with parent state when parent changes
+  useEffect(() => {
+    setLocalJobInfo(jobInfo);
+  }, [jobInfo]);
+
   const handleNext = () => {
+    // Ensure final update to parent state before navigation
+    setJobInfo(localJobInfo);
     setLocation('/services');
   };
 
@@ -62,7 +85,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
               <input
                 type="text"
-                value={jobInfo.customerName}
+                value={localJobInfo.customerName}
                 onChange={(e) => handleInputChange('customerName', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter customer name"
@@ -73,7 +96,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Invoice Number</label>
               <input
                 type="text"
-                value={jobInfo.invoiceNumber}
+                value={localJobInfo.invoiceNumber}
                 onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter invoice number"
@@ -84,7 +107,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
               <input
                 type="text"
-                value={jobInfo.vehicleType}
+                value={localJobInfo.vehicleType}
                 onChange={(e) => handleInputChange('vehicleType', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Freightliner Cascadia"
@@ -95,7 +118,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Weight (lbs)</label>
               <input
                 type="number"
-                value={jobInfo.vehicleWeight || ''}
+                value={localJobInfo.vehicleWeight || ''}
                 onChange={(e) => handleInputChange('vehicleWeight', parseInt(e.target.value) || 0)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter weight in pounds"
@@ -106,7 +129,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Description of Recovery and Work Performed</label>
               <input
                 type="text"
-                value={jobInfo.problemDescription}
+                value={localJobInfo.problemDescription}
                 onChange={(e) => handleInputChange('problemDescription', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Rollover recovery, Vehicle extraction"
@@ -117,7 +140,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Fuel Surcharge (%)</label>
               <input
                 type="number"
-                value={jobInfo.fuelSurcharge}
+                value={localJobInfo.fuelSurcharge}
                 onChange={(e) => handleInputChange('fuelSurcharge', parseFloat(e.target.value) || 0)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
