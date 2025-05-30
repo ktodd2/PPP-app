@@ -1,4 +1,5 @@
 import { useLocation } from 'wouter';
+import { useCallback } from 'react';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,13 @@ interface HomePageProps {
 
 export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
+
+  const updateJobInfo = useCallback((field: keyof JobInfo, value: string | number) => {
+    setJobInfo(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, [setJobInfo]);
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -54,7 +62,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <input
                 type="text"
                 value={jobInfo.customerName}
-                onChange={(e) => setJobInfo({...jobInfo, customerName: e.target.value})}
+                onChange={(e) => updateJobInfo('customerName', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter customer name"
               />
@@ -65,7 +73,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <input
                 type="text"
                 value={jobInfo.invoiceNumber}
-                onChange={(e) => setJobInfo({...jobInfo, invoiceNumber: e.target.value})}
+                onChange={(e) => updateJobInfo('invoiceNumber', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter invoice number"
               />
@@ -76,7 +84,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <input
                 type="text"
                 value={jobInfo.vehicleType}
-                onChange={(e) => setJobInfo({...jobInfo, vehicleType: e.target.value})}
+                onChange={(e) => updateJobInfo('vehicleType', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Freightliner Cascadia"
               />
@@ -87,7 +95,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <input
                 type="number"
                 value={jobInfo.vehicleWeight || ''}
-                onChange={(e) => setJobInfo({...jobInfo, vehicleWeight: parseInt(e.target.value) || 0})}
+                onChange={(e) => updateJobInfo('vehicleWeight', parseInt(e.target.value) || 0)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter weight in pounds"
               />
@@ -98,7 +106,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <input
                 type="text"
                 value={jobInfo.problemDescription}
-                onChange={(e) => setJobInfo({...jobInfo, problemDescription: e.target.value})}
+                onChange={(e) => updateJobInfo('problemDescription', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Rollover recovery, Vehicle extraction"
               />
@@ -109,7 +117,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <input
                 type="number"
                 value={jobInfo.fuelSurcharge}
-                onChange={(e) => setJobInfo({...jobInfo, fuelSurcharge: parseFloat(e.target.value) || 0})}
+                onChange={(e) => updateJobInfo('fuelSurcharge', parseFloat(e.target.value) || 0)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
               />
