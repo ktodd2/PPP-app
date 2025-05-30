@@ -1,4 +1,5 @@
 import { useLocation } from 'wouter';
+import { useState, useEffect } from 'react';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,18 +15,26 @@ interface HomePageProps {
 
 export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
+  
+  // Local state for each field to avoid re-render issues
+  const [customerName, setCustomerName] = useState(jobInfo.customerName);
+  const [invoiceNumber, setInvoiceNumber] = useState(jobInfo.invoiceNumber);
+  const [vehicleType, setVehicleType] = useState(jobInfo.vehicleType);
+  const [vehicleWeight, setVehicleWeight] = useState(jobInfo.vehicleWeight.toString());
+  const [problemDescription, setProblemDescription] = useState(jobInfo.problemDescription);
+  const [fuelSurcharge, setFuelSurcharge] = useState(jobInfo.fuelSurcharge.toString());
 
-  const updateField = (field: keyof JobInfo, value: string) => {
-    const newJobInfo = { ...jobInfo };
-    if (field === 'vehicleWeight') {
-      newJobInfo[field] = value === '' ? 0 : parseInt(value) || 0;
-    } else if (field === 'fuelSurcharge') {
-      newJobInfo[field] = value === '' ? 0 : parseFloat(value) || 0;
-    } else {
-      (newJobInfo as any)[field] = value;
-    }
-    setJobInfo(newJobInfo);
-  };
+  // Update parent state when local state changes
+  useEffect(() => {
+    setJobInfo({
+      customerName,
+      invoiceNumber,
+      vehicleType,
+      vehicleWeight: parseInt(vehicleWeight) || 0,
+      problemDescription,
+      fuelSurcharge: parseFloat(fuelSurcharge) || 0
+    });
+  }, [customerName, invoiceNumber, vehicleType, vehicleWeight, problemDescription, fuelSurcharge, setJobInfo]);
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -65,8 +74,8 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
               <input
                 type="text"
-                value={jobInfo.customerName}
-                onChange={(e) => updateField('customerName', e.target.value)}
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter customer name"
               />
@@ -76,8 +85,8 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Invoice Number</label>
               <input
                 type="text"
-                value={jobInfo.invoiceNumber}
-                onChange={(e) => updateField('invoiceNumber', e.target.value)}
+                value={invoiceNumber}
+                onChange={(e) => setInvoiceNumber(e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter invoice number"
               />
@@ -87,8 +96,8 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
               <input
                 type="text"
-                value={jobInfo.vehicleType}
-                onChange={(e) => updateField('vehicleType', e.target.value)}
+                value={vehicleType}
+                onChange={(e) => setVehicleType(e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Freightliner Cascadia"
               />
@@ -98,8 +107,8 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Weight (lbs)</label>
               <input
                 type="text"
-                value={jobInfo.vehicleWeight || ''}
-                onChange={(e) => updateField('vehicleWeight', e.target.value)}
+                value={vehicleWeight}
+                onChange={(e) => setVehicleWeight(e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter weight in pounds"
               />
@@ -109,8 +118,8 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Description of Recovery and Work Performed</label>
               <input
                 type="text"
-                value={jobInfo.problemDescription}
-                onChange={(e) => updateField('problemDescription', e.target.value)}
+                value={problemDescription}
+                onChange={(e) => setProblemDescription(e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Rollover recovery, Vehicle extraction"
               />
@@ -120,8 +129,8 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Fuel Surcharge (%)</label>
               <input
                 type="text"
-                value={jobInfo.fuelSurcharge}
-                onChange={(e) => updateField('fuelSurcharge', e.target.value)}
+                value={fuelSurcharge}
+                onChange={(e) => setFuelSurcharge(e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
               />
