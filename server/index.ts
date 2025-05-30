@@ -44,7 +44,7 @@ const upload = multer({
       cb(new Error(`File type not allowed. Got: ${file.mimetype}, ${file.originalname}`));
     }
   },
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
 });
 
 // Serve uploaded files

@@ -129,12 +129,12 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
     }
 
     // Convert photos to data URLs
-    const photoDataUrls = [];
+    const photoDataUrls: Array<any & { dataUrl: string }> = [];
     for (const photo of jobPhotos) {
       try {
         const response = await fetch(photo.photoPath);
         const blob = await response.blob();
-        const dataUrl = await new Promise((resolve) => {
+        const dataUrl = await new Promise<string>((resolve) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
           reader.readAsDataURL(blob);
