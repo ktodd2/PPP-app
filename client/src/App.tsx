@@ -42,7 +42,7 @@ function Router() {
     queryKey: ['/api/services'],
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
-  });
+  }) as { data: any[] };
 
   const handleCalculateInvoice = async () => {
     const calculatedInvoice = calculateInvoice(jobInfo, selectedServices, services, subcontractors, customServices);
@@ -158,7 +158,7 @@ function Router() {
   };
 
   const stableSetJobInfo = useCallback((newJobInfo: JobInfo) => {
-    setJobInfo(newJobInfo);
+    setJobInfo(prev => ({ ...prev, ...newJobInfo }));
   }, []);
 
   const handleReset = () => {

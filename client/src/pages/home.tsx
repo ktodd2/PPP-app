@@ -17,10 +17,11 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
   const [, setLocation] = useLocation();
   
   const updateField = (field: keyof JobInfo, value: string | number) => {
-    setJobInfo({
+    const updatedJobInfo = {
       ...jobInfo,
       [field]: value
-    });
+    };
+    setJobInfo(updatedJobInfo);
   };
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
