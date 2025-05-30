@@ -1,5 +1,4 @@
 import { useLocation } from 'wouter';
-import { useState, useEffect } from 'react';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,26 +14,6 @@ interface HomePageProps {
 
 export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
-  
-  // Local state for each field to avoid re-render issues
-  const [customerName, setCustomerName] = useState(jobInfo.customerName);
-  const [invoiceNumber, setInvoiceNumber] = useState(jobInfo.invoiceNumber);
-  const [vehicleType, setVehicleType] = useState(jobInfo.vehicleType);
-  const [vehicleWeight, setVehicleWeight] = useState(jobInfo.vehicleWeight.toString());
-  const [problemDescription, setProblemDescription] = useState(jobInfo.problemDescription);
-  const [fuelSurcharge, setFuelSurcharge] = useState(jobInfo.fuelSurcharge.toString());
-
-  // Update parent state when local state changes
-  useEffect(() => {
-    setJobInfo({
-      customerName,
-      invoiceNumber,
-      vehicleType,
-      vehicleWeight: parseInt(vehicleWeight) || 0,
-      problemDescription,
-      fuelSurcharge: parseFloat(fuelSurcharge) || 0
-    });
-  }, [customerName, invoiceNumber, vehicleType, vehicleWeight, problemDescription, fuelSurcharge, setJobInfo]);
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -74,8 +53,11 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
               <input
                 type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
+                value={jobInfo.customerName}
+                onChange={(e) => {
+                  jobInfo.customerName = e.target.value;
+                  setJobInfo({...jobInfo});
+                }}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter customer name"
               />
@@ -85,8 +67,11 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Invoice Number</label>
               <input
                 type="text"
-                value={invoiceNumber}
-                onChange={(e) => setInvoiceNumber(e.target.value)}
+                value={jobInfo.invoiceNumber}
+                onChange={(e) => {
+                  jobInfo.invoiceNumber = e.target.value;
+                  setJobInfo({...jobInfo});
+                }}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter invoice number"
               />
@@ -96,8 +81,11 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
               <input
                 type="text"
-                value={vehicleType}
-                onChange={(e) => setVehicleType(e.target.value)}
+                value={jobInfo.vehicleType}
+                onChange={(e) => {
+                  jobInfo.vehicleType = e.target.value;
+                  setJobInfo({...jobInfo});
+                }}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Freightliner Cascadia"
               />
@@ -107,8 +95,11 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Weight (lbs)</label>
               <input
                 type="text"
-                value={vehicleWeight}
-                onChange={(e) => setVehicleWeight(e.target.value)}
+                value={jobInfo.vehicleWeight || ''}
+                onChange={(e) => {
+                  jobInfo.vehicleWeight = parseInt(e.target.value) || 0;
+                  setJobInfo({...jobInfo});
+                }}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter weight in pounds"
               />
@@ -118,8 +109,11 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Description of Recovery and Work Performed</label>
               <input
                 type="text"
-                value={problemDescription}
-                onChange={(e) => setProblemDescription(e.target.value)}
+                value={jobInfo.problemDescription}
+                onChange={(e) => {
+                  jobInfo.problemDescription = e.target.value;
+                  setJobInfo({...jobInfo});
+                }}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Rollover recovery, Vehicle extraction"
               />
@@ -129,8 +123,11 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Fuel Surcharge (%)</label>
               <input
                 type="text"
-                value={fuelSurcharge}
-                onChange={(e) => setFuelSurcharge(e.target.value)}
+                value={jobInfo.fuelSurcharge}
+                onChange={(e) => {
+                  jobInfo.fuelSurcharge = parseFloat(e.target.value) || 0;
+                  setJobInfo({...jobInfo});
+                }}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
               />
