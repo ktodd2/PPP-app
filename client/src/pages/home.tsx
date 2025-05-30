@@ -16,39 +16,11 @@ interface HomePageProps {
 export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
   
-  // Local form state to prevent re-render issues
-  const [formData, setFormData] = useState({
-    customerName: jobInfo.customerName,
-    invoiceNumber: jobInfo.invoiceNumber,
-    vehicleType: jobInfo.vehicleType,
-    vehicleWeight: jobInfo.vehicleWeight,
-    problemDescription: jobInfo.problemDescription,
-    fuelSurcharge: jobInfo.fuelSurcharge
-  });
-
-  // Keep form data synchronized with parent state
-  useEffect(() => {
-    setFormData({
-      customerName: jobInfo.customerName,
-      invoiceNumber: jobInfo.invoiceNumber,
-      vehicleType: jobInfo.vehicleType,
-      vehicleWeight: jobInfo.vehicleWeight,
-      problemDescription: jobInfo.problemDescription,
-      fuelSurcharge: jobInfo.fuelSurcharge
-    });
-  }, [jobInfo]);
-
   const handleInputChange = (field: string, value: string | number) => {
-    const newFormData = {
-      ...formData,
-      [field]: value
-    };
-    setFormData(newFormData);
-    
-    // Also update parent state immediately to prevent data loss
+    // Update parent state directly to prevent focus loss
     setJobInfo({
       ...jobInfo,
-      ...newFormData
+      [field]: value
     });
   };
 
@@ -66,11 +38,6 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
   };
 
   const handleNext = () => {
-    // Update parent state with form data before navigating
-    setJobInfo({
-      ...jobInfo,
-      ...formData
-    });
     setLocation('/services');
   };
 
@@ -95,7 +62,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
               <input
                 type="text"
-                value={formData.customerName}
+                value={jobInfo.customerName}
                 onChange={(e) => handleInputChange('customerName', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter customer name"
@@ -106,7 +73,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Invoice Number</label>
               <input
                 type="text"
-                value={formData.invoiceNumber}
+                value={jobInfo.invoiceNumber}
                 onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter invoice number"
@@ -117,7 +84,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
               <input
                 type="text"
-                value={formData.vehicleType}
+                value={jobInfo.vehicleType}
                 onChange={(e) => handleInputChange('vehicleType', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Freightliner Cascadia"
@@ -128,7 +95,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Weight (lbs)</label>
               <input
                 type="number"
-                value={formData.vehicleWeight || ''}
+                value={jobInfo.vehicleWeight || ''}
                 onChange={(e) => handleInputChange('vehicleWeight', parseInt(e.target.value) || 0)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="Enter weight in pounds"
@@ -139,7 +106,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Description of Recovery and Work Performed</label>
               <input
                 type="text"
-                value={formData.problemDescription}
+                value={jobInfo.problemDescription}
                 onChange={(e) => handleInputChange('problemDescription', e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="e.g., Rollover recovery, Vehicle extraction"
@@ -150,7 +117,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">Fuel Surcharge (%)</label>
               <input
                 type="number"
-                value={formData.fuelSurcharge}
+                value={jobInfo.fuelSurcharge}
                 onChange={(e) => handleInputChange('fuelSurcharge', parseFloat(e.target.value) || 0)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
