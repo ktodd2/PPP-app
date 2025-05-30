@@ -16,39 +16,47 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
   const [, setLocation] = useLocation();
 
   const handleCustomerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newJobInfo = { ...jobInfo };
-    newJobInfo.customerName = e.target.value;
-    setJobInfo(newJobInfo);
+    setJobInfo(prev => {
+      if (prev.customerName === e.target.value) return prev;
+      return { ...prev, customerName: e.target.value };
+    });
   };
 
   const handleInvoiceNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newJobInfo = { ...jobInfo };
-    newJobInfo.invoiceNumber = e.target.value;
-    setJobInfo(newJobInfo);
+    setJobInfo(prev => {
+      if (prev.invoiceNumber === e.target.value) return prev;
+      return { ...prev, invoiceNumber: e.target.value };
+    });
   };
 
   const handleVehicleTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newJobInfo = { ...jobInfo };
-    newJobInfo.vehicleType = e.target.value;
-    setJobInfo(newJobInfo);
+    setJobInfo(prev => {
+      if (prev.vehicleType === e.target.value) return prev;
+      return { ...prev, vehicleType: e.target.value };
+    });
   };
 
   const handleVehicleWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newJobInfo = { ...jobInfo };
-    newJobInfo.vehicleWeight = parseInt(e.target.value) || 0;
-    setJobInfo(newJobInfo);
+    const newValue = parseInt(e.target.value) || 0;
+    setJobInfo(prev => {
+      if (prev.vehicleWeight === newValue) return prev;
+      return { ...prev, vehicleWeight: newValue };
+    });
   };
 
   const handleProblemDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newJobInfo = { ...jobInfo };
-    newJobInfo.problemDescription = e.target.value;
-    setJobInfo(newJobInfo);
+    setJobInfo(prev => {
+      if (prev.problemDescription === e.target.value) return prev;
+      return { ...prev, problemDescription: e.target.value };
+    });
   };
 
   const handleFuelSurchargeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newJobInfo = { ...jobInfo };
-    newJobInfo.fuelSurcharge = parseFloat(e.target.value) || 0;
-    setJobInfo(newJobInfo);
+    const newValue = parseFloat(e.target.value) || 0;
+    setJobInfo(prev => {
+      if (prev.fuelSurcharge === newValue) return prev;
+      return { ...prev, fuelSurcharge: newValue };
+    });
   };
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
