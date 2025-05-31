@@ -104,7 +104,7 @@ export function printInvoice() {
   window.print();
 }
 
-export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = []) {
+export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], companySettings: any = null) {
   try {
     // Create a temporary div for PDF generation
     const tempDiv = document.createElement('div');
@@ -116,14 +116,33 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = []) {
     tempDiv.style.padding = '20mm';
     tempDiv.style.fontFamily = 'Arial, sans-serif';
     
+    // Get company info
+    const companyName = companySettings?.companyName || 'Professional Towing';
+    const companySubtitle = companySettings?.companySubtitle || 'Heavy Duty Recovery Services';
+    const companyLogo = companySettings?.companyLogo || '🚛';
+    const address = companySettings?.address || '';
+    const phone = companySettings?.phone || '';
+    const email = companySettings?.email || '';
+    
+    // Create logo HTML
+    let logoHtml = '';
+    if (companyLogo.startsWith('/uploads/')) {
+      logoHtml = `<img src="${companyLogo}" alt="Company Logo" style="width: 64px; height: 64px; object-fit: contain; margin-bottom: 10px;" />`;
+    } else {
+      logoHtml = `<div style="font-size: 48px; margin-bottom: 10px;">${companyLogo}</div>`;
+    }
+
     // Create PDF-optimized invoice content
     tempDiv.innerHTML = `
       <div style="max-width: 170mm; margin: 0 auto;">
         <!-- Company Header -->
         <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #e5e7eb;">
-          <div style="font-size: 48px; margin-bottom: 10px;">🚛</div>
-          <h1 style="font-size: 28px; font-weight: bold; color: #1f2937; margin: 0 0 8px 0;">Professional Towing</h1>
-          <p style="color: #6b7280; font-size: 14px; margin: 0;">Heavy Duty Recovery Services</p>
+          ${logoHtml}
+          <h1 style="font-size: 28px; font-weight: bold; color: #1f2937; margin: 0 0 8px 0;">${companyName}</h1>
+          <p style="color: #6b7280; font-size: 14px; margin: 0;">${companySubtitle}</p>
+          ${address ? `<p style="color: #6b7280; font-size: 12px; margin: 4px 0 0 0;">${address}</p>` : ''}
+          ${phone ? `<p style="color: #6b7280; font-size: 12px; margin: 4px 0 0 0;">${phone}</p>` : ''}
+          ${email ? `<p style="color: #6b7280; font-size: 12px; margin: 4px 0 0 0;">${email}</p>` : ''}
         </div>
 
         <!-- Invoice Header -->

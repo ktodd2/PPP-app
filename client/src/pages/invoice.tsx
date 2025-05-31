@@ -54,7 +54,7 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
     
     setIsExporting(true);
     try {
-      await exportToPDF(invoice, jobPhotos);
+      await exportToPDF(invoice, jobPhotos, companySettings);
     } catch (error) {
       alert('Failed to export PDF. Please try again.');
     } finally {
