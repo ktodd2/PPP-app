@@ -33,10 +33,68 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
     }));
   };
 
-  const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const resizeImage = (file: File, maxWidth: number = 800, maxHeight: number = 600, quality: number = 0.8): Promise<File> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions
+        let { width, height } = img;
+        
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          const resizedFile = new File([blob!], file.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now()
+          });
+          resolve(resizedFile);
+        }, 'image/jpeg', quality);
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handlePhotoSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    if (setSelectedPhotos) {
-      setSelectedPhotos([...selectedPhotos, ...files]);
+    const processedFiles: File[] = [];
+    
+    for (const file of files) {
+      // Check file size (limit to 5MB original)
+      if (file.size > 5 * 1024 * 1024) {
+        console.warn(`File ${file.name} is too large (${(file.size / 1024 / 1024).toFixed(1)}MB), skipping`);
+        continue;
+      }
+      
+      try {
+        // Resize image to ensure it works in PDF
+        const resizedFile = await resizeImage(file);
+        processedFiles.push(resizedFile);
+      } catch (error) {
+        console.error(`Error processing ${file.name}:`, error);
+      }
+    }
+    
+    if (setSelectedPhotos && processedFiles.length > 0) {
+      setSelectedPhotos([...selectedPhotos, ...processedFiles]);
     }
   };
 
