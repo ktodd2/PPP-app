@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
@@ -25,6 +25,30 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
     problemDescription: jobInfo.problemDescription,
     fuelSurcharge: jobInfo.fuelSurcharge
   });
+
+  // Only update form data when jobInfo changes externally (like from job selection)
+  // but not when photos are uploaded
+  useEffect(() => {
+    // Check if the jobInfo has actually changed (not just a re-render)
+    const hasJobInfoChanged = 
+      jobInfo.customerName !== formData.customerName ||
+      jobInfo.invoiceNumber !== formData.invoiceNumber ||
+      jobInfo.vehicleType !== formData.vehicleType ||
+      jobInfo.vehicleWeight !== formData.vehicleWeight ||
+      jobInfo.problemDescription !== formData.problemDescription ||
+      jobInfo.fuelSurcharge !== formData.fuelSurcharge;
+
+    if (hasJobInfoChanged) {
+      setFormData({
+        customerName: jobInfo.customerName,
+        invoiceNumber: jobInfo.invoiceNumber,
+        vehicleType: jobInfo.vehicleType,
+        vehicleWeight: jobInfo.vehicleWeight,
+        problemDescription: jobInfo.problemDescription,
+        fuelSurcharge: jobInfo.fuelSurcharge
+      });
+    }
+  }, [jobInfo.customerName, jobInfo.invoiceNumber, jobInfo.vehicleType, jobInfo.vehicleWeight, jobInfo.problemDescription, jobInfo.fuelSurcharge]);
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({
