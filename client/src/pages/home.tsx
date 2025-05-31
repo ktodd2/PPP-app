@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'wouter';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
@@ -15,6 +15,8 @@ interface HomePageProps {
 
 export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
+  const hasUserModified = useRef(false);
+  const initialJobInfo = useRef(jobInfo);
   
   // Local form state to prevent re-render issues
   const [formData, setFormData] = useState({
@@ -26,31 +28,28 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
     fuelSurcharge: jobInfo.fuelSurcharge
   });
 
-  // Only update form data when jobInfo changes externally (like from job selection)
-  // but not when photos are uploaded
+  // Only reset form data if jobInfo has actually changed from external source
   useEffect(() => {
-    // Check if the jobInfo has actually changed (not just a re-render)
-    const hasJobInfoChanged = 
-      jobInfo.customerName !== formData.customerName ||
-      jobInfo.invoiceNumber !== formData.invoiceNumber ||
-      jobInfo.vehicleType !== formData.vehicleType ||
-      jobInfo.vehicleWeight !== formData.vehicleWeight ||
-      jobInfo.problemDescription !== formData.problemDescription ||
-      jobInfo.fuelSurcharge !== formData.fuelSurcharge;
-
-    if (hasJobInfoChanged) {
-      setFormData({
-        customerName: jobInfo.customerName,
-        invoiceNumber: jobInfo.invoiceNumber,
-        vehicleType: jobInfo.vehicleType,
-        vehicleWeight: jobInfo.vehicleWeight,
-        problemDescription: jobInfo.problemDescription,
-        fuelSurcharge: jobInfo.fuelSurcharge
-      });
+    if (!hasUserModified.current) {
+      const hasJobInfoChanged = JSON.stringify(initialJobInfo.current) !== JSON.stringify(jobInfo);
+      if (hasJobInfoChanged) {
+        setFormData({
+          customerName: jobInfo.customerName,
+          invoiceNumber: jobInfo.invoiceNumber,
+          vehicleType: jobInfo.vehicleType,
+          vehicleWeight: jobInfo.vehicleWeight,
+          problemDescription: jobInfo.problemDescription,
+          fuelSurcharge: jobInfo.fuelSurcharge
+        });
+        initialJobInfo.current = jobInfo;
+      }
     }
-  }, [jobInfo.customerName, jobInfo.invoiceNumber, jobInfo.vehicleType, jobInfo.vehicleWeight, jobInfo.problemDescription, jobInfo.fuelSurcharge]);
+  }, [jobInfo]);
+
+
 
   const handleInputChange = (field: string, value: string | number) => {
+    hasUserModified.current = true;
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -76,6 +75,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
       ...jobInfo,
       ...formData
     });
+    hasUserModified.current = false; // Reset modification flag
     setLocation('/services');
   };
 
