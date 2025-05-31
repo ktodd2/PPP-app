@@ -149,7 +149,6 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
                     type="file"
                     multiple
                     accept="image/*"
-                    capture="environment"
                     onChange={handlePhotoSelect}
                     className="hidden"
                   />
