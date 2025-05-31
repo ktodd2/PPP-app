@@ -96,6 +96,9 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
     if (setSelectedPhotos && processedFiles.length > 0) {
       setSelectedPhotos([...selectedPhotos, ...processedFiles]);
     }
+    
+    // Clear the input so the same file can be selected again or to allow adding more photos on mobile
+    event.target.value = '';
   };
 
   const removePhoto = (index: number) => {
@@ -146,6 +149,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
                     type="file"
                     multiple
                     accept="image/*"
+                    capture="environment"
                     onChange={handlePhotoSelect}
                     className="hidden"
                   />
