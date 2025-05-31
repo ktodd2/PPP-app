@@ -72,6 +72,55 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
           <h2 className="text-2xl font-semibold text-slate-800 mb-6 border-b border-slate-200 pb-3">Job Information</h2>
           
           <div className="space-y-4">
+            {/* Photo Upload Section */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Camera className="inline mr-2 h-4 w-4" />
+                Job Photos (Optional)
+              </label>
+              
+              {/* Upload Button */}
+              <div className="flex gap-2 mb-3">
+                <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors inline-flex items-center gap-2">
+                  <Camera className="h-4 w-4" />
+                  Add Photos
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handlePhotoSelect}
+                    className="hidden"
+                  />
+                </label>
+                {selectedPhotos.length > 0 && (
+                  <span className="text-sm text-gray-600 flex items-center">
+                    {selectedPhotos.length} photo{selectedPhotos.length !== 1 ? 's' : ''} selected
+                  </span>
+                )}
+              </div>
+              
+              {/* Photo Preview Grid */}
+              {selectedPhotos.length > 0 && (
+                <div className="grid grid-cols-4 gap-2">
+                  {selectedPhotos.map((photo, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={URL.createObjectURL(photo)}
+                        alt={`Job photo ${index + 1}`}
+                        className="w-full h-16 object-cover rounded-lg border-2 border-gray-200"
+                      />
+                      <button
+                        onClick={() => removePhoto(index)}
+                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-lg opacity-75 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
               <input
@@ -143,55 +192,6 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
               />
-            </div>
-
-            {/* Photo Upload Section */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Camera className="inline mr-2 h-4 w-4" />
-                Job Photos (Optional)
-              </label>
-              
-              {/* Upload Button */}
-              <div className="flex gap-2 mb-3">
-                <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors inline-flex items-center gap-2">
-                  <Camera className="h-4 w-4" />
-                  Add Photos
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handlePhotoSelect}
-                    className="hidden"
-                  />
-                </label>
-                {selectedPhotos.length > 0 && (
-                  <span className="text-sm text-gray-600 flex items-center">
-                    {selectedPhotos.length} photo{selectedPhotos.length !== 1 ? 's' : ''} selected
-                  </span>
-                )}
-              </div>
-              
-              {/* Photo Preview Grid */}
-              {selectedPhotos.length > 0 && (
-                <div className="grid grid-cols-4 gap-2">
-                  {selectedPhotos.map((photo, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={URL.createObjectURL(photo)}
-                        alt={`Job photo ${index + 1}`}
-                        className="w-full h-16 object-cover rounded-lg border-2 border-gray-200"
-                      />
-                      <button
-                        onClick={() => removePhoto(index)}
-                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-lg opacity-75 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </div>
