@@ -79,30 +79,24 @@ export function calculateInvoice(
   };
 }
 
-export async function shareInvoice(invoice: Invoice, jobPhotos: any[] = [], companySettings: any = null) {
-  try {
-    // Generate PDF and share it
-    await exportToPDF(invoice, jobPhotos, companySettings);
-  } catch (error) {
-    // Fallback to text sharing if PDF export fails
-    const invoiceText = `Invoice #${invoice.invoiceNumber}\nCustomer: ${invoice.customerName}\nTotal: $${invoice.total.toFixed(2)}`;
-    
-    if (navigator.share) {
-      navigator.share({
-        title: 'Towing Invoice',
-        text: invoiceText
-      }).catch(() => {
-        // User cancelled share or share failed, no need to show error
-      });
-    } else {
-      // Fallback for browsers that don't support Web Share API
-      navigator.clipboard.writeText(invoiceText).then(() => {
-        alert('Invoice details copied to clipboard!');
-      }).catch(() => {
-        // Fallback if clipboard API is not available
-        prompt('Copy this invoice text:', invoiceText);
-      });
-    }
+export function shareInvoice(invoice: Invoice) {
+  const invoiceText = `Invoice #${invoice.invoiceNumber}\nCustomer: ${invoice.customerName}\nTotal: $${invoice.total.toFixed(2)}`;
+  
+  if (navigator.share) {
+    navigator.share({
+      title: 'Towing Invoice',
+      text: invoiceText
+    }).catch(() => {
+      // User cancelled share or share failed, no need to show error
+    });
+  } else {
+    // Fallback for browsers that don't support Web Share API
+    navigator.clipboard.writeText(invoiceText).then(() => {
+      alert('Invoice details copied to clipboard!');
+    }).catch(() => {
+      // Fallback if clipboard API is not available
+      prompt('Copy this invoice text:', invoiceText);
+    });
   }
 }
 
@@ -110,46 +104,8 @@ export function printInvoice() {
   window.print();
 }
 
-export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], companySettings: any = null) {
+export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = []) {
   try {
-    // Convert logo to data URL if it exists
-    let logoDataUrl = '';
-    if (companySettings?.companyLogo && companySettings.companyLogo.startsWith('/uploads/')) {
-      try {
-        const response = await fetch(companySettings.companyLogo);
-        const blob = await response.blob();
-        logoDataUrl = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(blob);
-        });
-      } catch (error) {
-        console.warn('Failed to load logo for PDF export:', error);
-      }
-    }
-
-    // Convert photos to data URLs
-    const photoDataUrls: Array<{ id: number; photoPath: string; dataUrl: string }> = [];
-    for (const photo of jobPhotos) {
-      try {
-        const response = await fetch(photo.photoPath);
-        const blob = await response.blob();
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-        photoDataUrls.push({ 
-          id: photo.id, 
-          photoPath: photo.photoPath, 
-          dataUrl 
-        });
-      } catch (error) {
-        console.warn('Failed to load photo for PDF export:', error);
-      }
-    }
-
     // Create a temporary div for PDF generation
     const tempDiv = document.createElement('div');
     tempDiv.style.position = 'absolute';
@@ -165,15 +121,9 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
       <div style="max-width: 170mm; margin: 0 auto;">
         <!-- Company Header -->
         <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #e5e7eb;">
-          ${logoDataUrl 
-            ? `<img src="${logoDataUrl}" alt="Company Logo" style="width: 64px; height: 64px; object-fit: contain; margin: 0 auto 10px auto; display: block;" />`
-            : `<div style="font-size: 48px; margin-bottom: 10px;">${companySettings?.companyLogo || '🚛'}</div>`
-          }
-          <h1 style="font-size: 28px; font-weight: bold; color: #1f2937; margin: 0 0 8px 0;">${companySettings?.companyName || 'Professional Towing'}</h1>
-          <p style="color: #6b7280; font-size: 14px; margin: 0;">${companySettings?.companySubtitle || 'Heavy Duty Recovery Services'}</p>
-          ${companySettings?.address ? `<p style="color: #6b7280; font-size: 12px; margin: 4px 0 0 0;">${companySettings.address}</p>` : ''}
-          ${companySettings?.phone ? `<p style="color: #6b7280; font-size: 12px; margin: 2px 0 0 0;">${companySettings.phone}</p>` : ''}
-          ${companySettings?.email ? `<p style="color: #6b7280; font-size: 12px; margin: 2px 0 0 0;">${companySettings.email}</p>` : ''}
+          <div style="font-size: 48px; margin-bottom: 10px;">🚛</div>
+          <h1 style="font-size: 28px; font-weight: bold; color: #1f2937; margin: 0 0 8px 0;">Professional Towing</h1>
+          <p style="color: #6b7280; font-size: 14px; margin: 0;">Heavy Duty Recovery Services</p>
         </div>
 
         <!-- Invoice Header -->
@@ -187,7 +137,7 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
             <p style="margin: 4px 0;"><strong>Customer:</strong> ${invoice.customerName}</p>
             <p style="margin: 4px 0;"><strong>Vehicle:</strong> ${invoice.vehicleType}</p>
             <p style="margin: 4px 0;"><strong>Weight:</strong> ${invoice.vehicleWeight.toLocaleString()} lbs</p>
-            <p style="margin: 4px 0;"><strong>Description of Recovery and Work Performed:</strong> ${invoice.problemDescription}</p>
+            <p style="margin: 4px 0;"><strong>Problem:</strong> ${invoice.problemDescription}</p>
           </div>
         </div>
 
@@ -214,101 +164,35 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
           </table>
         </div>
 
-        ${invoice.customServices && invoice.customServices.length > 0 ? `
-        <!-- Custom Services -->
-        <div style="margin-bottom: 30px;">
-          <h3 style="font-weight: bold; color: #1f2937; margin-bottom: 15px; font-size: 18px;">Custom Services</h3>
-          <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-              <tr style="background-color: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-                <th style="text-align: left; padding: 12px 8px; font-weight: 600; color: #374151;">Service</th>
-                <th style="text-align: right; padding: 12px 8px; font-weight: 600; color: #374151;">Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${invoice.customServices.map(service => `
-                <tr style="border-bottom: 1px solid #f3f4f6;">
-                  <td style="padding: 12px 8px; color: #374151;">${service.name}</td>
-                  <td style="text-align: right; padding: 12px 8px; color: #374151; font-weight: 500;">$${service.price.toFixed(2)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-        ` : ''}
-
-        ${invoice.subcontractors && invoice.subcontractors.length > 0 ? `
-        <!-- Subcontractors -->
-        <div style="margin-bottom: 30px;">
-          <h3 style="font-weight: bold; color: #1f2937; margin-bottom: 15px; font-size: 18px;">Subcontractors</h3>
-          <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-              <tr style="background-color: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-                <th style="text-align: left; padding: 12px 8px; font-weight: 600; color: #374151;">Name</th>
-                <th style="text-align: left; padding: 12px 8px; font-weight: 600; color: #374151;">Work Performed</th>
-                <th style="text-align: right; padding: 12px 8px; font-weight: 600; color: #374151;">Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${invoice.subcontractors.map(sub => `
-                <tr style="border-bottom: 1px solid #f3f4f6;">
-                  <td style="padding: 12px 8px; color: #374151; font-weight: 500;">${sub.name}</td>
-                  <td style="padding: 12px 8px; color: #374151;">${sub.workPerformed}</td>
-                  <td style="text-align: right; padding: 12px 8px; color: #374151; font-weight: 500;">$${sub.price.toFixed(2)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-        ` : ''}
-
         <!-- Totals -->
-        <div style="border-top: 2px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
-          <table style="width: 100%; font-size: 14px;">
-            <tr>
-              <td style="text-align: right; padding: 4px 0; color: #4b5563;">Subtotal:</td>
-              <td style="text-align: right; padding: 4px 0 4px 20px; color: #374151; font-weight: 500; width: 100px;">$${invoice.subtotal.toFixed(2)}</td>
-            </tr>
-            ${invoice.customServicesTotal > 0 ? `
-            <tr>
-              <td style="text-align: right; padding: 4px 0; color: #4b5563;">Custom Services:</td>
-              <td style="text-align: right; padding: 4px 0 4px 20px; color: #374151; font-weight: 500;">$${invoice.customServicesTotal.toFixed(2)}</td>
-            </tr>
-            ` : ''}
-            ${invoice.subcontractorTotal > 0 ? `
-            <tr>
-              <td style="text-align: right; padding: 4px 0; color: #4b5563;">Subcontractors:</td>
-              <td style="text-align: right; padding: 4px 0 4px 20px; color: #374151; font-weight: 500;">$${invoice.subcontractorTotal.toFixed(2)}</td>
-            </tr>
-            ` : ''}
-            <tr>
-              <td style="text-align: right; padding: 4px 0; color: #4b5563;">Fuel Surcharge (${invoice.fuelSurcharge}%):</td>
-              <td style="text-align: right; padding: 4px 0 4px 20px; color: #374151; font-weight: 500;">$${invoice.fuelSurchargeAmount.toFixed(2)}</td>
-            </tr>
-            <tr style="border-top: 1px solid #d1d5db;">
-              <td style="text-align: right; padding: 12px 0 4px 0; color: #1f2937; font-weight: bold; font-size: 18px;">Total:</td>
-              <td style="text-align: right; padding: 12px 0 4px 20px; color: #1f2937; font-weight: bold; font-size: 18px;">$${invoice.total.toFixed(2)}</td>
-            </tr>
-          </table>
+        <div style="border-top: 2px solid #e5e7eb; padding-top: 20px;">
+          <div style="text-align: right; font-size: 14px; line-height: 1.8;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="color: #4b5563;">Subtotal:</span>
+              <span style="color: #374151; font-weight: 500;">$${invoice.subtotal.toFixed(2)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="color: #4b5563;">Fuel Surcharge (${invoice.fuelSurcharge}%):</span>
+              <span style="color: #374151; font-weight: 500;">$${invoice.fuelSurchargeAmount.toFixed(2)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #d1d5db; font-size: 18px;">
+              <span style="color: #1f2937; font-weight: bold;">Total:</span>
+              <span style="color: #1f2937; font-weight: bold;">$${invoice.total.toFixed(2)}</span>
+            </div>
+          </div>
         </div>
 
-        ${photoDataUrls && photoDataUrls.length > 0 ? `
+        ${jobPhotos && jobPhotos.length > 0 ? `
         <!-- Job Photos -->
         <div style="margin-top: 30px; page-break-inside: avoid;">
           <h3 style="font-weight: bold; color: #1f2937; margin-bottom: 15px; font-size: 18px;">Job Photos</h3>
-          <table style="width: 100%; border-collapse: separate; border-spacing: 10px;">
-            ${Array.from({ length: Math.ceil(photoDataUrls.length / 3) }, (_, rowIndex) => `
-              <tr>
-                ${photoDataUrls.slice(rowIndex * 3, (rowIndex + 1) * 3).map(photo => `
-                  <td style="width: 33.33%; border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden; height: 120px; text-align: center; vertical-align: middle; padding: 0;">
-                    <img src="${photo.dataUrl}" style="max-width: 100%; max-height: 120px; object-fit: cover;" alt="Job photo" />
-                  </td>
-                `).join('')}
-                ${photoDataUrls.slice(rowIndex * 3, (rowIndex + 1) * 3).length < 3 ? 
-                  Array.from({ length: 3 - photoDataUrls.slice(rowIndex * 3, (rowIndex + 1) * 3).length }, () => '<td style="width: 33.33%;"></td>').join('') : ''}
-              </tr>
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
+            ${jobPhotos.map(photo => `
+              <div style="aspect-ratio: 1; border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden;">
+                <img src="${photo.photoPath}" style="width: 100%; height: 100%; object-fit: cover;" alt="Job photo" />
+              </div>
             `).join('')}
-          </table>
+          </div>
         </div>
         ` : ''}
 

@@ -23,12 +23,12 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
   // Fetch job photos if currentJobId is available
   const { data: jobPhotos = [] } = useQuery<any[]>({
     queryKey: [`/api/jobs/${currentJobId}/photos`],
-    enabled: !!currentJobId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false
+    enabled: !!currentJobId
   });
+
+  // Debug logging
+  console.log('Invoice page - currentJobId:', currentJobId);
+  console.log('Invoice page - jobPhotos:', jobPhotos);
 
   const handleBack = () => {
     setLocation('/services');
@@ -39,9 +39,9 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
     setLocation('/');
   };
 
-  const handleShare = async () => {
+  const handleShare = () => {
     if (invoice) {
-      await shareInvoice(invoice, jobPhotos, companySettings);
+      shareInvoice(invoice);
     }
   };
 
@@ -54,7 +54,7 @@ export default function InvoicePage({ invoice, onReset, currentJobId }: InvoiceP
     
     setIsExporting(true);
     try {
-      await exportToPDF(invoice, jobPhotos, companySettings);
+      await exportToPDF(invoice, jobPhotos);
     } catch (error) {
       alert('Failed to export PDF. Please try again.');
     } finally {

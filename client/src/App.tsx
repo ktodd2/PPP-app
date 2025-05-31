@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -42,7 +42,7 @@ function Router() {
     queryKey: ['/api/services'],
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
-  }) as { data: any[] };
+  });
 
   const handleCalculateInvoice = async () => {
     const calculatedInvoice = calculateInvoice(jobInfo, selectedServices, services, subcontractors, customServices);
@@ -157,10 +157,6 @@ function Router() {
     }
   };
 
-  const handleSetJobInfo = useCallback((jobInfo: JobInfo) => {
-    setJobInfo(jobInfo);
-  }, []);
-
   const handleReset = () => {
     setJobInfo({
       customerName: '',
@@ -195,13 +191,12 @@ function Router() {
       />
 
       <Switch>
-        <Route path="/auth" component={AuthPage} />
         <ProtectedRoute 
           path="/" 
           component={() => (
             <HomePage 
               jobInfo={jobInfo} 
-              setJobInfo={handleSetJobInfo}
+              setJobInfo={setJobInfo}
               selectedPhotos={selectedPhotos}
               setSelectedPhotos={setSelectedPhotos}
             />
@@ -232,6 +227,7 @@ function Router() {
             />
           )}
         />
+        <Route path="/auth" component={AuthPage} />
       </Switch>
     </>
   );
