@@ -156,7 +156,7 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
             <p style="margin: 4px 0;"><strong>Customer:</strong> ${invoice.customerName}</p>
             <p style="margin: 4px 0;"><strong>Vehicle:</strong> ${invoice.vehicleType}</p>
             <p style="margin: 4px 0;"><strong>Weight:</strong> ${invoice.vehicleWeight.toLocaleString()} lbs</p>
-            <p style="margin: 4px 0;"><strong>Problem:</strong> ${invoice.problemDescription}</p>
+            <p style="margin: 4px 0;"><strong>Description of Recovery and Work Performed:</strong> ${invoice.problemDescription}</p>
           </div>
         </div>
 
