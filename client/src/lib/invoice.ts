@@ -127,7 +127,7 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
     // Create logo HTML
     let logoHtml = '';
     if (companyLogo.startsWith('/uploads/')) {
-      logoHtml = `<img src="${companyLogo}" alt="Company Logo" style="width: 64px; height: 64px; object-fit: contain; margin-bottom: 10px;" />`;
+      logoHtml = `<img src="${companyLogo}" alt="Company Logo" style="width: 64px; height: 64px; object-fit: contain; margin: 0 auto 10px auto; display: block;" />`;
     } else {
       logoHtml = `<div style="font-size: 48px; margin-bottom: 10px;">${companyLogo}</div>`;
     }
