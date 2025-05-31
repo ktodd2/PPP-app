@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
@@ -39,18 +39,18 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
     }));
   };
 
-  const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (setSelectedPhotos) {
-      setSelectedPhotos([...selectedPhotos, ...files]);
+      setSelectedPhotos(prev => [...prev, ...files]);
     }
-  };
+  }, [setSelectedPhotos]);
 
-  const removePhoto = (index: number) => {
+  const removePhoto = useCallback((index: number) => {
     if (setSelectedPhotos) {
-      setSelectedPhotos(selectedPhotos.filter((_, i) => i !== index));
+      setSelectedPhotos(prev => prev.filter((_, i) => i !== index));
     }
-  };
+  }, [setSelectedPhotos]);
 
   const handleNext = () => {
     // Update parent state with form data before navigating
