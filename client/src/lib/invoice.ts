@@ -290,8 +290,7 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
       scale: 2,
       useCORS: true,
       backgroundColor: '#ffffff',
-      width: 794, // A4 width in pixels at 96 DPI
-      height: 1123 // A4 height in pixels at 96 DPI
+      width: 794 // A4 width in pixels at 96 DPI - let height be dynamic
     });
 
     // Remove temp div
