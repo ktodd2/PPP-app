@@ -183,6 +183,54 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
           </table>
         </div>
 
+        <!-- Custom Services Table -->
+        ${invoice.customServices && invoice.customServices.length > 0 ? `
+        <div style="margin-bottom: 30px;">
+          <h3 style="font-weight: bold; color: #1f2937; margin-bottom: 15px; font-size: 18px;">Custom Services</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background-color: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                <th style="text-align: left; padding: 12px 8px; font-weight: 600; color: #374151;">Service</th>
+                <th style="text-align: right; padding: 12px 8px; font-weight: 600; color: #374151; width: 80px;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${invoice.customServices.map(service => `
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                  <td style="padding: 10px 8px; color: #374151;">${service.name}</td>
+                  <td style="padding: 10px 8px; text-align: right; font-weight: 500; color: #374151;">$${service.price.toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        ` : ''}
+
+        <!-- Subcontractors Table -->
+        ${invoice.subcontractors && invoice.subcontractors.length > 0 ? `
+        <div style="margin-bottom: 30px;">
+          <h3 style="font-weight: bold; color: #1f2937; margin-bottom: 15px; font-size: 18px;">Subcontractors</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background-color: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                <th style="text-align: left; padding: 12px 8px; font-weight: 600; color: #374151;">Name</th>
+                <th style="text-align: left; padding: 12px 8px; font-weight: 600; color: #374151;">Work Performed</th>
+                <th style="text-align: right; padding: 12px 8px; font-weight: 600; color: #374151; width: 80px;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${invoice.subcontractors.map(sub => `
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                  <td style="padding: 10px 8px; color: #374151;">${sub.name}</td>
+                  <td style="padding: 10px 8px; color: #374151;">${sub.workPerformed}</td>
+                  <td style="padding: 10px 8px; text-align: right; font-weight: 500; color: #374151;">$${sub.price.toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        ` : ''}
+
         <!-- Totals -->
         <div style="border-top: 2px solid #e5e7eb; padding-top: 20px;">
           <div style="text-align: right; font-size: 14px; line-height: 1.8;">
@@ -190,6 +238,18 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
               <span style="color: #4b5563;">Subtotal:</span>
               <span style="color: #374151; font-weight: 500;">$${invoice.subtotal.toFixed(2)}</span>
             </div>
+            ${invoice.customServicesTotal > 0 ? `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="color: #4b5563;">Custom Services:</span>
+              <span style="color: #374151; font-weight: 500;">$${invoice.customServicesTotal.toFixed(2)}</span>
+            </div>
+            ` : ''}
+            ${invoice.subcontractorTotal > 0 ? `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="color: #4b5563;">Subcontractors:</span>
+              <span style="color: #374151; font-weight: 500;">$${invoice.subcontractorTotal.toFixed(2)}</span>
+            </div>
+            ` : ''}
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
               <span style="color: #4b5563;">Fuel Surcharge (${invoice.fuelSurcharge}%):</span>
               <span style="color: #374151; font-weight: 500;">$${invoice.fuelSurchargeAmount.toFixed(2)}</span>
