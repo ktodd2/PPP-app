@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState } from 'react';
 import { useLocation } from 'wouter';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
@@ -15,22 +15,16 @@ interface HomePageProps {
 
 export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
-  const initializedRef = useRef(false);
   
   // Local form state to prevent re-render issues
-  const [formData, setFormData] = useState(() => {
-    // Initialize once and don't reset unless explicitly needed
-    return {
-      customerName: jobInfo.customerName,
-      invoiceNumber: jobInfo.invoiceNumber,
-      vehicleType: jobInfo.vehicleType,
-      vehicleWeight: jobInfo.vehicleWeight,
-      problemDescription: jobInfo.problemDescription,
-      fuelSurcharge: jobInfo.fuelSurcharge
-    };
+  const [formData, setFormData] = useState({
+    customerName: jobInfo.customerName,
+    invoiceNumber: jobInfo.invoiceNumber,
+    vehicleType: jobInfo.vehicleType,
+    vehicleWeight: jobInfo.vehicleWeight,
+    problemDescription: jobInfo.problemDescription,
+    fuelSurcharge: jobInfo.fuelSurcharge
   });
-
-
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({
@@ -39,18 +33,18 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
     }));
   };
 
-  const handlePhotoSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (setSelectedPhotos) {
-      setSelectedPhotos(prev => [...prev, ...files]);
+      setSelectedPhotos([...selectedPhotos, ...files]);
     }
-  }, [setSelectedPhotos]);
+  };
 
-  const removePhoto = useCallback((index: number) => {
+  const removePhoto = (index: number) => {
     if (setSelectedPhotos) {
-      setSelectedPhotos(prev => prev.filter((_, i) => i !== index));
+      setSelectedPhotos(selectedPhotos.filter((_, i) => i !== index));
     }
-  }, [setSelectedPhotos]);
+  };
 
   const handleNext = () => {
     // Update parent state with form data before navigating
