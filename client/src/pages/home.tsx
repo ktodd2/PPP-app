@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLocation } from 'wouter';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
@@ -26,30 +26,11 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
     fuelSurcharge: jobInfo.fuelSurcharge
   });
 
-  // Sync local state with parent jobInfo when it changes
-  useEffect(() => {
-    setFormData({
-      customerName: jobInfo.customerName,
-      invoiceNumber: jobInfo.invoiceNumber,
-      vehicleType: jobInfo.vehicleType,
-      vehicleWeight: jobInfo.vehicleWeight,
-      problemDescription: jobInfo.problemDescription,
-      fuelSurcharge: jobInfo.fuelSurcharge
-    });
-  }, [jobInfo]);
-
   const handleInputChange = (field: string, value: string | number) => {
-    const newFormData = {
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [field]: value
-    };
-    setFormData(newFormData);
-    
-    // Also update parent state immediately to keep everything in sync
-    setJobInfo({
-      ...jobInfo,
-      ...newFormData
-    });
+    }));
   };
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
