@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import type { JobInfo } from '@/lib/invoice';
 import { Camera, X } from 'lucide-react';
@@ -15,41 +15,24 @@ interface HomePageProps {
 
 export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], setSelectedPhotos }: HomePageProps) {
   const [, setLocation] = useLocation();
-  const hasUserModified = useRef(false);
-  const initialJobInfo = useRef(jobInfo);
+  const initializedRef = useRef(false);
   
   // Local form state to prevent re-render issues
-  const [formData, setFormData] = useState({
-    customerName: jobInfo.customerName,
-    invoiceNumber: jobInfo.invoiceNumber,
-    vehicleType: jobInfo.vehicleType,
-    vehicleWeight: jobInfo.vehicleWeight,
-    problemDescription: jobInfo.problemDescription,
-    fuelSurcharge: jobInfo.fuelSurcharge
+  const [formData, setFormData] = useState(() => {
+    // Initialize once and don't reset unless explicitly needed
+    return {
+      customerName: jobInfo.customerName,
+      invoiceNumber: jobInfo.invoiceNumber,
+      vehicleType: jobInfo.vehicleType,
+      vehicleWeight: jobInfo.vehicleWeight,
+      problemDescription: jobInfo.problemDescription,
+      fuelSurcharge: jobInfo.fuelSurcharge
+    };
   });
-
-  // Only reset form data if jobInfo has actually changed from external source
-  useEffect(() => {
-    if (!hasUserModified.current) {
-      const hasJobInfoChanged = JSON.stringify(initialJobInfo.current) !== JSON.stringify(jobInfo);
-      if (hasJobInfoChanged) {
-        setFormData({
-          customerName: jobInfo.customerName,
-          invoiceNumber: jobInfo.invoiceNumber,
-          vehicleType: jobInfo.vehicleType,
-          vehicleWeight: jobInfo.vehicleWeight,
-          problemDescription: jobInfo.problemDescription,
-          fuelSurcharge: jobInfo.fuelSurcharge
-        });
-        initialJobInfo.current = jobInfo;
-      }
-    }
-  }, [jobInfo]);
 
 
 
   const handleInputChange = (field: string, value: string | number) => {
-    hasUserModified.current = true;
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -75,7 +58,6 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
       ...jobInfo,
       ...formData
     });
-    hasUserModified.current = false; // Reset modification flag
     setLocation('/services');
   };
 
