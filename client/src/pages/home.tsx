@@ -130,9 +130,16 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Fuel Surcharge (%)</label>
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={formData.fuelSurcharge}
-                onChange={(e) => handleInputChange('fuelSurcharge', parseFloat(e.target.value) || 15)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Allow empty string, numbers, and decimal points
+                  if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                    handleInputChange('fuelSurcharge', value === '' ? 0 : parseFloat(value) || 0);
+                  }
+                }}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
                 placeholder="15"
               />
