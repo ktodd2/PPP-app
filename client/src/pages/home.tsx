@@ -138,6 +138,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Camera className="inline mr-2 h-4 w-4" />
                 Job Photos (Optional)
+                <span className="block text-xs text-gray-500 mt-1">Tap "Add Photos" multiple times to select several photos from gallery</span>
               </label>
               
               {/* Upload Button */}
