@@ -135,14 +135,14 @@ export default function ServicesPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 text-white p-6 sticky top-0 z-10 shadow-xl">
+      <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-900 text-foreground p-6 sticky top-0 z-10 shadow-xl border-b border-border">
         <div className="flex items-center justify-between max-w-lg mx-auto">
-          <button onClick={handleBack} className="text-2xl hover:text-blue-200 transition-colors">←</button>
+          <button onClick={handleBack} className="text-2xl hover:text-primary transition-colors">←</button>
           <div className="text-center">
             <h1 className="text-xl font-bold tracking-tight">PPP Invoice Wizard</h1>
-            <p className="text-sm text-blue-100 font-light">Select Services</p>
+            <p className="text-sm text-primary font-light">Select Services</p>
           </div>
           <div className="w-8"></div>
         </div>
@@ -154,22 +154,22 @@ export default function ServicesPage({
           {services.map(service => {
             const isSelected = selectedServices[service.id] || false;
             return (
-              <div key={service.id} className="bg-white rounded-2xl p-4 shadow-sm">
+              <div key={service.id} className="glass-card rounded-2xl p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 pr-4">
-                    <h3 className="font-medium text-gray-800 text-sm leading-tight mb-1">
+                    <h3 className="font-medium text-foreground text-sm leading-tight mb-1">
                       {service.name}
                     </h3>
-                    <p className="text-green-600 font-bold text-sm">
+                    <p className="text-primary font-bold text-sm">
                       {parseFloat(service.rate as string).toFixed(1)}¢ per lb
                     </p>
                   </div>
                   <button
                     onClick={() => toggleService(service.id)}
-                    className={`service-toggle px-6 py-3 rounded-xl font-bold text-sm min-w-16 ${
+                    className={`service-toggle px-6 py-3 rounded-xl font-bold text-sm min-w-16 shadow-lg transition-all ${
                       isSelected 
-                        ? 'bg-green-500 text-white' 
-                        : 'bg-red-500 text-white'
+                        ? 'bg-green-600 text-white hover:bg-green-500' 
+                        : 'bg-red-600 text-white hover:bg-red-500'
                     }`}
                   >
                     {isSelected ? 'ON' : 'OFF'}
@@ -182,21 +182,21 @@ export default function ServicesPage({
 
         {/* Custom Services Section */}
         <div className="mb-6">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Custom Services</h2>
+          <h2 className="text-lg font-bold text-foreground mb-4">Custom Services</h2>
           
           {/* Existing Custom Services */}
           {customServices.length > 0 && (
             <div className="space-y-3 mb-4">
               {customServices.map((service, index) => (
-                <div key={index} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <div key={index} className="glass-card rounded-2xl p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-800 text-sm mb-1">{service.name}</h3>
-                      <p className="text-sm font-bold text-green-600">${service.price.toFixed(2)}</p>
+                      <h3 className="font-medium text-foreground text-sm mb-1">{service.name}</h3>
+                      <p className="text-sm font-bold text-primary">${service.price.toFixed(2)}</p>
                     </div>
                     <button
                       onClick={() => removeCustomService(index)}
-                      className="text-red-500 hover:text-red-700 p-1"
+                      className="text-destructive hover:text-destructive/80 p-1 transition-colors"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -207,15 +207,15 @@ export default function ServicesPage({
           )}
 
           {/* Add New Custom Service */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
-            <h3 className="font-medium text-gray-800 text-sm mb-3">Add Custom Service</h3>
+          <div className="glass-card rounded-2xl p-4">
+            <h3 className="font-medium text-foreground text-sm mb-3">Add Custom Service</h3>
             <div className="space-y-3">
               <input
                 type="text"
                 placeholder="Service name"
                 value={newCustomService.name}
                 onChange={(e) => setNewCustomService({...newCustomService, name: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
               />
               <input
                 type="number"
@@ -223,11 +223,11 @@ export default function ServicesPage({
                 placeholder="Price ($)"
                 value={newCustomService.price}
                 onChange={(e) => setNewCustomService({...newCustomService, price: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
               />
               <button
                 onClick={addCustomService}
-                className="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center justify-center"
+                className="w-full bg-primary text-primary-foreground font-medium py-2 px-4 rounded-lg text-sm hover:bg-primary/90 transition-colors flex items-center justify-center shadow-lg"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Custom Service
@@ -238,22 +238,22 @@ export default function ServicesPage({
 
         {/* Subcontractors Section */}
         <div className="mb-6">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Subcontractors</h2>
+          <h2 className="text-lg font-bold text-foreground mb-4">Subcontractors</h2>
           
           {/* Existing Subcontractors */}
           {subcontractors.length > 0 && (
             <div className="space-y-3 mb-4">
               {subcontractors.map((sub, index) => (
-                <div key={index} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <div key={index} className="glass-card rounded-2xl p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-800 text-sm mb-1">{sub.name}</h3>
-                      <p className="text-xs text-gray-600 mb-2">{sub.workPerformed}</p>
-                      <p className="text-sm font-bold text-green-600">${sub.price.toFixed(2)}</p>
+                      <h3 className="font-medium text-foreground text-sm mb-1">{sub.name}</h3>
+                      <p className="text-xs text-muted-foreground mb-2">{sub.workPerformed}</p>
+                      <p className="text-sm font-bold text-primary">${sub.price.toFixed(2)}</p>
                     </div>
                     <button
                       onClick={() => removeSubcontractor(index)}
-                      className="text-red-500 hover:text-red-700 p-1"
+                      className="text-destructive hover:text-destructive/80 p-1 transition-colors"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -264,22 +264,22 @@ export default function ServicesPage({
           )}
 
           {/* Add New Subcontractor */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
-            <h3 className="font-medium text-gray-800 text-sm mb-3">Add Subcontractor</h3>
+          <div className="glass-card rounded-2xl p-4">
+            <h3 className="font-medium text-foreground text-sm mb-3">Add Subcontractor</h3>
             <div className="space-y-3">
               <input
                 type="text"
                 placeholder="Subcontractor name"
                 value={newSubcontractor.name}
                 onChange={(e) => setNewSubcontractor({...newSubcontractor, name: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
               />
               <input
                 type="text"
                 placeholder="Work performed"
                 value={newSubcontractor.workPerformed}
                 onChange={(e) => setNewSubcontractor({...newSubcontractor, workPerformed: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
               />
               <input
                 type="number"
@@ -287,11 +287,11 @@ export default function ServicesPage({
                 placeholder="Price ($)"
                 value={newSubcontractor.price}
                 onChange={(e) => setNewSubcontractor({...newSubcontractor, price: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
               />
               <button
                 onClick={addSubcontractor}
-                className="w-full bg-green-600 text-white font-medium py-2 px-4 rounded-lg text-sm hover:bg-green-700 transition-colors flex items-center justify-center"
+                className="w-full bg-green-600 text-white font-medium py-2 px-4 rounded-lg text-sm hover:bg-green-700 transition-colors flex items-center justify-center shadow-lg"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Subcontractor
@@ -303,7 +303,7 @@ export default function ServicesPage({
         {/* Calculate Button */}
         <button
           onClick={handleNext}
-          className="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg active:scale-95 transition-transform"
+          className="w-full bg-primary text-primary-foreground font-bold py-4 px-6 rounded-2xl text-lg shadow-2xl shadow-primary/20 hover:shadow-primary/40 active:scale-95 transition-all"
         >
           Calculate Invoice
         </button>

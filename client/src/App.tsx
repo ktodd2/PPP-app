@@ -178,7 +178,7 @@ function Router() {
       {/* Menu Button */}
       <button
         onClick={() => setSidebarOpen(true)}
-        className="fixed top-4 right-4 z-40 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+        className="fixed top-4 right-4 z-40 bg-primary text-primary-foreground p-3 rounded-full shadow-2xl hover:bg-primary/90 transition-all hover:scale-110 active:scale-95"
       >
         ⚙️
       </button>

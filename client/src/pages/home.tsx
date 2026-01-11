@@ -117,34 +117,36 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-4">
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="text-center mb-8 pt-8">
-          <div className="inline-block bg-white/10 backdrop-blur-sm rounded-2xl px-8 py-6 mb-6">
-            <h1 className="text-5xl font-bold text-white mb-3 tracking-tight">PPP</h1>
-            <h2 className="text-xl font-medium text-blue-100 mb-2 tracking-wide">(Price per Pound)</h2>
-            <h3 className="text-lg text-blue-200 font-light">Invoice Wizard</h3>
+          <div className="inline-block glass-card rounded-2xl px-8 py-6 mb-6">
+            <h1 className="text-5xl font-bold text-foreground mb-3 tracking-tight">PPP</h1>
+            <h2 className="text-xl font-medium text-primary mb-2 tracking-wide">(Price per Pound)</h2>
+            <h3 className="text-lg text-muted-foreground font-light">Invoice Wizard</h3>
           </div>
         </div>
 
         {/* Job Info Card */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 mb-6 shadow-2xl border border-white/20">
-          <h2 className="text-2xl font-semibold text-slate-800 mb-6 border-b border-slate-200 pb-3">Job Information</h2>
+        <div className="glass-card rounded-2xl p-8 mb-6">
+          <h2 className="text-2xl font-semibold text-foreground mb-6 border-b border-border pb-3">Job Information</h2>
           
           <div className="space-y-4">
-            {/* Photo Upload Section */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Camera className="inline mr-2 h-4 w-4" />
+            {/* Photo Upload Section - Enhanced */}
+            <div className="bg-muted/30 rounded-xl p-4 border border-border">
+              <label className="block text-sm font-medium text-foreground mb-3">
+                <Camera className="inline mr-2 h-5 w-5 text-primary" />
                 Job Photos (Optional)
-                <span className="block text-xs text-gray-500 mt-1">Google Drive or local files is best for adding multiple photos</span>
+                <span className="block text-xs text-muted-foreground mt-1">
+                  Add photos to document the job site and vehicle condition
+                </span>
               </label>
               
               {/* Upload Button */}
-              <div className="flex gap-2 mb-3">
-                <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors inline-flex items-center gap-2">
-                  <Camera className="h-4 w-4" />
+              <div className="flex gap-2 mb-4">
+                <label className="cursor-pointer bg-primary text-primary-foreground px-4 py-3 rounded-lg hover:bg-primary/90 transition-all inline-flex items-center gap-2 font-medium shadow-lg hover:shadow-xl active:scale-95">
+                  <Camera className="h-5 w-5" />
                   Add Photos
                   <input
                     type="file"
@@ -155,28 +157,31 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
                   />
                 </label>
                 {selectedPhotos.length > 0 && (
-                  <span className="text-sm text-gray-600 flex items-center">
+                  <span className="text-sm text-muted-foreground flex items-center px-3 bg-accent rounded-lg font-medium">
                     {selectedPhotos.length} photo{selectedPhotos.length !== 1 ? 's' : ''} selected
                   </span>
                 )}
               </div>
               
-              {/* Photo Preview Grid */}
+              {/* Photo Preview Grid - Enhanced */}
               {selectedPhotos.length > 0 && (
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 gap-3">
                   {selectedPhotos.map((photo, index) => (
-                    <div key={index} className="relative group">
+                    <div key={index} className="photo-grid-item">
                       <img
                         src={URL.createObjectURL(photo)}
                         alt={`Job photo ${index + 1}`}
-                        className="w-full h-16 object-cover rounded-lg border-2 border-gray-200"
                       />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       <button
                         onClick={() => removePhoto(index)}
-                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-lg opacity-75 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 hover:bg-destructive/90 shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
                       >
-                        <X className="h-3 w-3" />
+                        <X className="h-4 w-4" />
                       </button>
+                      <span className="absolute bottom-2 left-2 text-xs text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                        Photo {index + 1}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -184,62 +189,62 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Customer Name</label>
               <input
                 type="text"
                 value={formData.customerName}
                 onChange={(e) => handleInputChange('customerName', e.target.value)}
-                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                className="w-full p-4 bg-input border-2 border-border rounded-xl focus:border-primary focus:outline-none text-lg text-foreground placeholder:text-muted-foreground transition-colors"
                 placeholder="Enter customer name"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Invoice Number</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Invoice Number</label>
               <input
                 type="text"
                 value={formData.invoiceNumber}
                 onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
-                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                className="w-full p-4 bg-input border-2 border-border rounded-xl focus:border-primary focus:outline-none text-lg text-foreground placeholder:text-muted-foreground transition-colors"
                 placeholder="Enter invoice number"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Vehicle Type</label>
               <input
                 type="text"
                 value={formData.vehicleType}
                 onChange={(e) => handleInputChange('vehicleType', e.target.value)}
-                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                className="w-full p-4 bg-input border-2 border-border rounded-xl focus:border-primary focus:outline-none text-lg text-foreground placeholder:text-muted-foreground transition-colors"
                 placeholder="e.g., Freightliner Cascadia"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Weight (lbs)</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Vehicle Weight (lbs)</label>
               <input
                 type="number"
                 value={formData.vehicleWeight || ''}
                 onChange={(e) => handleInputChange('vehicleWeight', parseInt(e.target.value) || 0)}
-                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                className="w-full p-4 bg-input border-2 border-border rounded-xl focus:border-primary focus:outline-none text-lg text-foreground placeholder:text-muted-foreground transition-colors"
                 placeholder="Enter weight in pounds"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Description of Recovery and Work Performed</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Description of Recovery and Work Performed</label>
               <input
                 type="text"
                 value={formData.problemDescription}
                 onChange={(e) => handleInputChange('problemDescription', e.target.value)}
-                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                className="w-full p-4 bg-input border-2 border-border rounded-xl focus:border-primary focus:outline-none text-lg text-foreground placeholder:text-muted-foreground transition-colors"
                 placeholder="e.g., Rollover recovery, Vehicle extraction"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Fuel Surcharge (%)</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Fuel Surcharge (%)</label>
               <input
                 type="text"
                 inputMode="decimal"
@@ -251,7 +256,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
                     handleInputChange('fuelSurcharge', value === '' ? 0 : parseFloat(value) || 0);
                   }
                 }}
-                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                className="w-full p-4 bg-input border-2 border-border rounded-xl focus:border-primary focus:outline-none text-lg text-foreground placeholder:text-muted-foreground transition-colors"
                 placeholder="15"
               />
             </div>
@@ -261,7 +266,7 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
         {/* Next Button */}
         <button
           onClick={handleNext}
-          className="w-full bg-white text-blue-600 font-bold py-4 px-6 rounded-2xl text-lg shadow-lg active:scale-95 transition-transform"
+          className="w-full bg-primary text-primary-foreground font-bold py-4 px-6 rounded-2xl text-lg shadow-2xl shadow-primary/20 hover:shadow-primary/40 active:scale-95 transition-all"
         >
           Select Services →
         </button>

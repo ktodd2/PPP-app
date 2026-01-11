@@ -159,46 +159,46 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
       />
       
       {/* Sidebar */}
-      <div className="relative bg-white w-80 h-full shadow-xl overflow-hidden flex flex-col">
+      <div className="relative bg-card w-80 h-full shadow-xl overflow-hidden flex flex-col border-l border-border">
         {/* Header */}
-        <div className="bg-blue-600 text-white p-4 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-900 text-foreground p-4 flex items-center justify-between border-b border-border">
           <h2 className="text-xl font-bold">Settings</h2>
           <button 
             onClick={onClose}
-            className="text-white hover:bg-blue-700 rounded-lg p-2"
+            className="text-foreground hover:bg-secondary rounded-lg p-2 transition-colors"
           >
             ✕
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b">
+        <div className="flex border-b border-border bg-muted/30">
           <button
             onClick={() => setActiveTab('jobs')}
-            className={`flex-1 py-3 px-4 text-sm font-medium ${
+            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
               activeTab === 'jobs' 
-                ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-800'
+                ? 'border-b-2 border-primary text-primary bg-primary/10' 
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             Recent Jobs
           </button>
           <button
             onClick={() => setActiveTab('services')}
-            className={`flex-1 py-3 px-4 text-sm font-medium ${
+            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
               activeTab === 'services' 
-                ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-800'
+                ? 'border-b-2 border-primary text-primary bg-primary/10' 
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             Service Rates
           </button>
           <button
             onClick={() => setActiveTab('company')}
-            className={`flex-1 py-3 px-4 text-sm font-medium ${
+            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
               activeTab === 'company' 
-                ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-800'
+                ? 'border-b-2 border-primary text-primary bg-primary/10' 
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             Company
@@ -206,18 +206,18 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4 bg-background">
           {/* Recent Jobs Tab */}
           {activeTab === 'jobs' && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-gray-800 mb-4">Recent Jobs</h3>
+              <h3 className="font-semibold text-foreground mb-4">Recent Jobs</h3>
               {recentJobs.length === 0 ? (
-                <p className="text-gray-500 text-sm">No recent jobs found</p>
+                <p className="text-muted-foreground text-sm">No recent jobs found</p>
               ) : (
                 recentJobs.map(job => (
                   <div 
                     key={job.id} 
-                    className="bg-gray-50 rounded-lg p-3 border cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                    className="glass-card rounded-lg p-3 cursor-pointer hover:border-primary transition-all"
                     onClick={() => {
                       if (onJobSelect) {
                         onJobSelect(job);
@@ -225,10 +225,10 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                       }
                     }}
                   >
-                    <div className="font-medium text-gray-800">#{job.invoiceNumber}</div>
-                    <div className="text-sm text-gray-600">{job.customerName}</div>
-                    <div className="text-sm text-gray-500">{job.vehicleType}</div>
-                    <div className="text-xs text-gray-400 mt-1">
+                    <div className="font-medium text-foreground">#{job.invoiceNumber}</div>
+                    <div className="text-sm text-muted-foreground">{job.customerName}</div>
+                    <div className="text-sm text-muted-foreground">{job.vehicleType}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
                       {new Date(job.createdAt).toLocaleDateString()}
                     </div>
                   </div>
@@ -240,10 +240,10 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
           {/* Service Rates Tab */}
           {activeTab === 'services' && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-gray-800 mb-4">Service Rates</h3>
+              <h3 className="font-semibold text-foreground mb-4">Service Rates</h3>
               {services.map(service => (
-                <div key={service.id} className="bg-gray-50 rounded-lg p-3 border">
-                  <div className="font-medium text-gray-800 text-sm mb-2">
+                <div key={service.id} className="glass-card rounded-lg p-3">
+                  <div className="font-medium text-foreground text-sm mb-2">
                     {service.name}
                   </div>
                   <div className="flex items-center space-x-2">
@@ -253,9 +253,9 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                       value={localServiceRates[service.id] ?? service.rate}
                       onChange={(e) => handleServiceRateChange(service.id, e.target.value)}
                       onBlur={() => handleServiceRateBlur(service.id)}
-                      className="w-20 px-2 py-1 border rounded text-sm"
+                      className="w-20 px-2 py-1 bg-input border border-border rounded text-sm text-foreground focus:border-primary focus:outline-none transition-colors"
                     />
-                    <span className="text-sm text-gray-600">¢ per lb</span>
+                    <span className="text-sm text-muted-foreground">¢ per lb</span>
                   </div>
                 </div>
               ))}
@@ -265,10 +265,10 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
           {/* Company Settings Tab */}
           {activeTab === 'company' && companySettings && (
             <div className="space-y-4">
-              <h3 className="font-semibold text-gray-800 mb-4">Company Settings</h3>
+              <h3 className="font-semibold text-foreground mb-4">Company Settings</h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Company Name
                 </label>
                 <input
@@ -276,12 +276,12 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                   value={localCompanySettings.companyName ?? companySettings.companyName}
                   onChange={(e) => handleCompanySettingsChange('companyName', e.target.value)}
                   onBlur={() => handleCompanySettingsBlur('companyName')}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  className="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground focus:border-primary focus:outline-none transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Subtitle
                 </label>
                 <input
@@ -289,12 +289,12 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                   value={localCompanySettings.companySubtitle ?? companySettings.companySubtitle}
                   onChange={(e) => handleCompanySettingsChange('companySubtitle', e.target.value)}
                   onBlur={() => handleCompanySettingsBlur('companySubtitle')}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  className="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground focus:border-primary focus:outline-none transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Company Logo
                 </label>
                 <div className="space-y-2">
@@ -303,25 +303,25 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                       <img 
                         src={companySettings.companyLogo} 
                         alt="Company Logo" 
-                        className="w-12 h-12 object-contain border rounded"
+                        className="w-12 h-12 object-contain border border-border rounded"
                       />
-                      <span className="text-sm text-gray-600">Current logo</span>
+                      <span className="text-sm text-muted-foreground">Current logo</span>
                     </div>
                   )}
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleLogoUpload}
-                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    className="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
                   />
-                  <p className="text-xs text-gray-500">Upload JPG, PNG, GIF, or WebP (max 5MB)</p>
+                  <p className="text-xs text-muted-foreground">Upload JPG, PNG, GIF, or WebP (max 5MB)</p>
                 </div>
               </div>
 
 
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Address
                 </label>
                 <input
@@ -329,13 +329,13 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                   value={localCompanySettings.address ?? companySettings.address ?? ''}
                   onChange={(e) => handleCompanySettingsChange('address', e.target.value)}
                   onBlur={() => handleCompanySettingsBlur('address')}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  className="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
                   placeholder="123 Main St, City, State"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Phone
                 </label>
                 <input
@@ -343,13 +343,13 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                   value={localCompanySettings.phone ?? companySettings.phone ?? ''}
                   onChange={(e) => handleCompanySettingsChange('phone', e.target.value)}
                   onBlur={() => handleCompanySettingsBlur('phone')}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  className="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
                   placeholder="(555) 123-4567"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Email
                 </label>
                 <input
@@ -357,20 +357,20 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
                   value={localCompanySettings.email ?? companySettings.email ?? ''}
                   onChange={(e) => handleCompanySettingsChange('email', e.target.value)}
                   onBlur={() => handleCompanySettingsBlur('email')}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  className="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
                   placeholder="info@yourtowing.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Invoice Footer
                 </label>
                 <textarea
                   value={localCompanySettings.invoiceFooter ?? companySettings.invoiceFooter ?? ''}
                   onChange={(e) => handleCompanySettingsChange('invoiceFooter', e.target.value)}
                   onBlur={() => handleCompanySettingsBlur('invoiceFooter')}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  className="w-full px-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
                   rows={3}
                   placeholder="Thank you for your business!"
                 />
