@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import type { Job, TowingService, CompanySettings } from '@shared/schema';
+import { useAuth } from '@/hooks/use-auth';
+import { useLocation } from 'wouter';
+import type { Job, TowingService, CompanySettings, User } from '@shared/schema';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,6 +13,8 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<'jobs' | 'services' | 'company'>('jobs');
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const [localServiceRates, setLocalServiceRates] = useState<Record<number, string>>({});
   const [localCompanySettings, setLocalCompanySettings] = useState<Partial<CompanySettings>>({});
   const queryClient = useQueryClient();
@@ -207,6 +211,22 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 bg-background">
+          {/* Admin Button - only show for admin users */}
+          {user?.role === 'admin' && (
+            <div className="mb-4">
+              <button
+                onClick={() => {
+                  setLocation('/admin');
+                  onClose();
+                }}
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 px-4 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-medium shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              >
+                <span className="text-lg">👑</span>
+                Admin Dashboard
+              </button>
+            </div>
+          )}
+
           {/* Recent Jobs Tab */}
           {activeTab === 'jobs' && (
             <div className="space-y-3">

@@ -1,17 +1,28 @@
-import { jobs, users, towingServices, invoiceServices, companySettings, jobPhotos, subcontractors, type Job, type InsertJob, type User, type InsertUser, type TowingService, type CompanySettings, type InsertCompanySettings, type JobPhoto, type InsertJobPhoto, type Subcontractor } from "@shared/schema";
+import { jobs, users, companies, towingServices, invoiceServices, companySettings, jobPhotos, subcontractors, type Job, type InsertJob, type User, type InsertUser, type Company, type InsertCompany, type TowingService, type CompanySettings, type InsertCompanySettings, type JobPhoto, type InsertJobPhoto, type Subcontractor } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User authentication methods
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(insertUser: InsertUser): Promise<User>;
+  getAllUsers(): Promise<User[]>;
+  updateUserCompany(userId: number, companyId: number | null): Promise<User>;
+  updateUserRole(userId: number, role: "admin" | "user"): Promise<User>;
+  deleteUser(userId: number): Promise<void>;
   
-  // Job methods (now user-specific)
+  // Company methods
+  createCompany(insertCompany: InsertCompany): Promise<Company>;
+  getAllCompanies(): Promise<Company[]>;
+  getCompany(id: number): Promise<Company | undefined>;
+  deleteCompany(id: number): Promise<void>;
+  
+  // Job methods (now company-aware)
   createJob(job: InsertJob): Promise<Job>;
   getJob(id: number): Promise<any>;
   getAllJobs(userId: number): Promise<Job[]>;
+  getCompanyJobs(companyId: number): Promise<Job[]>;
   getRecentJobs(userId: number, limit?: number): Promise<Job[]>;
   
   // Service methods
@@ -56,6 +67,54 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async updateUserCompany(userId: number, companyId: number | null): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ companyId })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserRole(userId: number, role: "admin" | "user"): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ role })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async deleteUser(userId: number): Promise<void> {
+    await db.delete(users).where(eq(users.id, userId));
+  }
+
+  // Company methods
+  async createCompany(insertCompany: InsertCompany): Promise<Company> {
+    const [company] = await db
+      .insert(companies)
+      .values(insertCompany)
+      .returning();
+    return company;
+  }
+
+  async getAllCompanies(): Promise<Company[]> {
+    return await db.select().from(companies).orderBy(desc(companies.createdAt));
+  }
+
+  async getCompany(id: number): Promise<Company | undefined> {
+    const [company] = await db.select().from(companies).where(eq(companies.id, id));
+    return company || undefined;
+  }
+
+  async deleteCompany(id: number): Promise<void> {
+    await db.delete(companies).where(eq(companies.id, id));
+  }
+
   async createJob(insertJob: InsertJob): Promise<Job> {
     const [job] = await db
       .insert(jobs)
@@ -82,6 +141,19 @@ export class DatabaseStorage implements IStorage {
 
   async getAllJobs(userId: number): Promise<Job[]> {
     return await db.select().from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt));
+  }
+
+  async getCompanyJobs(companyId: number): Promise<Job[]> {
+    // Get all users in the company
+    const companyUsers = await db.select().from(users).where(eq(users.companyId, companyId));
+    const userIds = companyUsers.map((u: User) => u.id);
+    
+    if (userIds.length === 0) {
+      return [];
+    }
+    
+    // Get all jobs from those users
+    return await db.select().from(jobs).where(inArray(jobs.userId, userIds)).orderBy(desc(jobs.createdAt));
   }
 
   async getRecentJobs(userId: number, limit: number = 10): Promise<Job[]> {

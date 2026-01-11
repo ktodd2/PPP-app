@@ -12,6 +12,17 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
+// Admin middleware
+function requireAdmin(req: any, res: any, next: any) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ message: "Admin access required" });
+  }
+  next();
+}
+
 export async function registerRoutes(app: Express, upload: any): Promise<Server> {
   // Setup authentication
   setupAuth(app);
@@ -229,6 +240,188 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     } catch (error) {
       console.error("Error creating invoice services:", error);
       res.status(400).json({ error: "Failed to create invoice services" });
+    }
+  });
+
+  // ==================== ADMIN ROUTES ====================
+  
+  // Get all users (admin only)
+  app.get("/api/admin/users", requireAdmin, async (req: any, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Don't send passwords
+      const sanitizedUsers = users.map(u => ({
+        id: u.id,
+        username: u.username,
+        role: u.role,
+        companyId: u.companyId,
+        createdAt: u.createdAt
+      }));
+      res.json(sanitizedUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  // Create a new user (admin only)
+  app.post("/api/admin/users", requireAdmin, async (req: any, res) => {
+    try {
+      const { username, password, role, companyId } = req.body;
+      
+      // Check if user already exists
+      const existing = await storage.getUserByUsername(username);
+      if (existing) {
+        return res.status(400).json({ error: "Username already exists" });
+      }
+
+      // Hash password (importing from auth.ts would be better, but inline for now)
+      const { scrypt, randomBytes } = await import("crypto");
+      const { promisify } = await import("util");
+      const scryptAsync = promisify(scrypt);
+      const salt = randomBytes(16).toString("hex");
+      const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+      const hashedPassword = `${buf.toString("hex")}.${salt}`;
+
+      const user = await storage.createUser({
+        username,
+        password: hashedPassword,
+        role: role || "user",
+        companyId: companyId || null
+      });
+
+      res.json({
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        companyId: user.companyId,
+        createdAt: user.createdAt
+      });
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(400).json({ error: "Failed to create user" });
+    }
+  });
+
+  // Update user company (admin only)
+  app.patch("/api/admin/users/:id/company", requireAdmin, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { companyId } = req.body;
+      
+      const user = await storage.updateUserCompany(userId, companyId);
+      res.json({
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        companyId: user.companyId,
+        createdAt: user.createdAt
+      });
+    } catch (error) {
+      console.error("Error updating user company:", error);
+      res.status(400).json({ error: "Failed to update user company" });
+    }
+  });
+
+  // Update user role (admin only)
+  app.patch("/api/admin/users/:id/role", requireAdmin, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { role } = req.body;
+      
+      if (role !== "admin" && role !== "user") {
+        return res.status(400).json({ error: "Invalid role" });
+      }
+      
+      const user = await storage.updateUserRole(userId, role);
+      res.json({
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        companyId: user.companyId,
+        createdAt: user.createdAt
+      });
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(400).json({ error: "Failed to update user role" });
+    }
+  });
+
+  // Delete user (admin only)
+  app.delete("/api/admin/users/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Prevent admin from deleting themselves
+      if (userId === req.user.id) {
+        return res.status(400).json({ error: "Cannot delete your own account" });
+      }
+      
+      await storage.deleteUser(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(400).json({ error: "Failed to delete user" });
+    }
+  });
+
+  // Get all companies (admin only)
+  app.get("/api/admin/companies", requireAdmin, async (req: any, res) => {
+    try {
+      const companies = await storage.getAllCompanies();
+      res.json(companies);
+    } catch (error) {
+      console.error("Error fetching companies:", error);
+      res.status(500).json({ error: "Failed to fetch companies" });
+    }
+  });
+
+  // Create company (admin only)
+  app.post("/api/admin/companies", requireAdmin, async (req: any, res) => {
+    try {
+      const { name } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ error: "Company name is required" });
+      }
+      
+      const company = await storage.createCompany({ name });
+      res.json(company);
+    } catch (error) {
+      console.error("Error creating company:", error);
+      res.status(400).json({ error: "Failed to create company" });
+    }
+  });
+
+  // Delete company (admin only)
+  app.delete("/api/admin/companies/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const companyId = parseInt(req.params.id);
+      await storage.deleteCompany(companyId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting company:", error);
+      res.status(400).json({ error: "Failed to delete company" });
+    }
+  });
+
+  // Get company jobs - shows all invoices for users in the same company
+  app.get("/api/company/jobs", requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      
+      if (!user.companyId) {
+        // User not in a company, return only their jobs
+        const jobs = await storage.getAllJobs(user.id);
+        return res.json(jobs);
+      }
+      
+      // User is in a company, return all company jobs
+      const jobs = await storage.getCompanyJobs(user.companyId);
+      res.json(jobs);
+    } catch (error) {
+      console.error("Error fetching company jobs:", error);
+      res.status(500).json({ error: "Failed to fetch company jobs" });
     }
   });
 

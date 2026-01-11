@@ -1,13 +1,32 @@
-import { pgTable, text, serial, integer, decimal, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, decimal, timestamp, varchar, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
+
+// Companies table
+export const companies = pgTable("companies", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertCompanySchema = createInsertSchema(companies).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertCompany = z.infer<typeof insertCompanySchema>;
+export type Company = typeof companies.$inferSelect;
+
+// User role enum
+export const userRoleEnum = pgEnum("user_role", ["admin", "user"]);
 
 // Users table for authentication
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: varchar("username", { length: 255 }).notNull().unique(),
   password: varchar("password", { length: 255 }).notNull(),
+  role: userRoleEnum("role").notNull().default("user"),
+  companyId: integer("company_id").references(() => companies.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -17,6 +36,18 @@ export const insertUserSchema = createInsertSchema(users).omit({
 });
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// User relations
+export const usersRelations = relations(users, ({ one }) => ({
+  company: one(companies, {
+    fields: [users.companyId],
+    references: [companies.id],
+  }),
+}));
+
+export const companiesRelations = relations(companies, ({ many }) => ({
+  users: many(users),
+}));
 
 // Job information schema
 export const jobs = pgTable("jobs", {
