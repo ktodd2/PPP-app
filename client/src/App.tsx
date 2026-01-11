@@ -11,6 +11,7 @@ import HomePage from "@/pages/home";
 import ServicesPage from "@/pages/services";
 import InvoicePage from "@/pages/invoice";
 import AuthPage from "@/pages/auth-page";
+import AdminPage from "@/pages/admin";
 import Sidebar from "@/components/Sidebar";
 
 import { calculateInvoice } from '@/lib/invoice';
@@ -119,6 +120,9 @@ function Router() {
       fuelSurcharge: parseFloat(job.fuelSurcharge)
     });
 
+    // Set the current job ID so photos can be loaded
+    setCurrentJobId(job.id);
+
     // Fetch job services and rebuild the invoice
     try {
       const response = await fetch(`/api/jobs/${job.id}`);
@@ -226,6 +230,10 @@ function Router() {
               currentJobId={currentJobId}
             />
           )}
+        />
+        <ProtectedRoute 
+          path="/admin" 
+          component={AdminPage}
         />
         <Route path="/auth" component={AuthPage} />
       </Switch>
