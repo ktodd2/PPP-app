@@ -23,7 +23,7 @@ This document explains the new admin user system and company-based invoice visib
 Run the setup script to add the necessary database tables and columns:
 
 ```bash
-node setup-admin.js
+npx tsx setup-admin.ts
 ```
 
 This will:
@@ -109,7 +109,7 @@ UPDATE users SET role = 'admin' WHERE username = 'your_username';
 
 Or use the setup script again:
 ```bash
-node setup-admin.js
+npx tsx setup-admin.ts
 ```
 
 ## Database Schema Changes

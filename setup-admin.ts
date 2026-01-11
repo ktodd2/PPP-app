@@ -1,8 +1,8 @@
-import { db } from "./server/db.js";
-import { users, companies } from "./shared/schema.js";
+import { db } from "./server/db";
+import { users, companies } from "./shared/schema";
 import { eq } from "drizzle-orm";
 import { sql } from "drizzle-orm";
-import readline from "readline";
+import * as readline from "readline";
 
 const rl = readline.createInterface({
   input: process.stdin,
