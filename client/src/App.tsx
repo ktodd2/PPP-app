@@ -119,6 +119,9 @@ function Router() {
       fuelSurcharge: parseFloat(job.fuelSurcharge)
     });
 
+    // Set the current job ID so photos can be loaded
+    setCurrentJobId(job.id);
+
     // Fetch job services and rebuild the invoice
     try {
       const response = await fetch(`/api/jobs/${job.id}`);
