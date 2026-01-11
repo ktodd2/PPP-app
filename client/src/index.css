@@ -58,10 +58,6 @@
     @apply font-sans antialiased bg-background text-foreground;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
-
-  html {
-    @apply dark;
-  }
 }
 
 @layer components {
@@ -87,7 +83,7 @@
   }
 
   .photo-grid-item {
-    @apply relative group overflow-hidden rounded-lg border-2 border-border;
+    @apply relative overflow-hidden rounded-lg border-2 border-border;
     aspect-ratio: 1;
     transition: all 0.2s ease;
   }
