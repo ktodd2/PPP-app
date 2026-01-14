@@ -52,7 +52,7 @@ export const companiesRelations = relations(companies, ({ many }) => ({
 // Job information schema
 export const jobs = pgTable("jobs", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   customerName: text("customer_name").notNull(),
   invoiceNumber: text("invoice_number").notNull(),
   vehicleType: text("vehicle_type").notNull(),
@@ -82,7 +82,7 @@ export type TowingService = typeof towingServices.$inferSelect;
 // Invoice services junction table
 export const invoiceServices = pgTable("invoice_services", {
   id: serial("id").primaryKey(),
-  jobId: integer("job_id").references(() => jobs.id).notNull(),
+  jobId: integer("job_id").references(() => jobs.id, { onDelete: "cascade" }).notNull(),
   serviceId: integer("service_id").references(() => towingServices.id).notNull(),
   cost: decimal("cost", { precision: 10, scale: 2 }).notNull(),
 });
@@ -92,7 +92,7 @@ export type InvoiceService = typeof invoiceServices.$inferSelect;
 // Company settings table
 export const companySettings = pgTable("company_settings", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   companyName: text("company_name").notNull().default("Professional Towing"),
   companySubtitle: text("company_subtitle").notNull().default("Heavy Duty Recovery Services"),
   companyLogo: text("company_logo").default("🚛"),

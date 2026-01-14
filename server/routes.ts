@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { insertJobSchema } from "@shared/schema";
+import { runMigrations } from "./migrate";
 
 // Authentication middleware
 function requireAuth(req: any, res: any, next: any) {
@@ -24,6 +25,9 @@ function requireAdmin(req: any, res: any, next: any) {
 }
 
 export async function registerRoutes(app: Express, upload: any): Promise<Server> {
+  // Run database migrations
+  await runMigrations();
+  
   // Setup authentication
   setupAuth(app);
   
