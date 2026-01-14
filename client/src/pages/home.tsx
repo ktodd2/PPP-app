@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
 import type { JobInfo } from '@/lib/invoice';
-import { Camera, X } from 'lucide-react';
+import { Camera, X, Truck, FileText, Scale, Fuel, User, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -117,36 +117,57 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-4">
-      <div className="max-w-lg mx-auto">
+    <div className="min-h-screen bg-background p-4 pb-8">
+      {/* Animated background gradient */}
+      <div className="fixed inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+
+      <div className="max-w-lg mx-auto relative">
         {/* Header */}
-        <div className="text-center mb-8 pt-8">
-          <div className="inline-block glass-card rounded-2xl px-8 py-6 mb-6">
-            <h1 className="text-5xl font-bold text-foreground mb-3 tracking-tight">PPP</h1>
-            <h2 className="text-xl font-medium text-primary mb-2 tracking-wide">(Price per Pound)</h2>
-            <h3 className="text-lg text-muted-foreground font-light">Invoice Wizard</h3>
+        <div className="text-center mb-8 pt-6">
+          <div className="relative inline-block">
+            <div className="glass-card rounded-3xl px-10 py-8 gradient-border">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <div className="p-2.5 bg-primary/20 rounded-xl">
+                  <Truck className="h-7 w-7 text-primary" />
+                </div>
+                <h1 className="text-5xl font-black tracking-tight gradient-text">PPP</h1>
+              </div>
+              <h2 className="text-lg font-medium text-primary/90 tracking-wide mb-1">Price per Pound</h2>
+              <h3 className="text-sm text-muted-foreground font-light flex items-center justify-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                Invoice Wizard
+              </h3>
+            </div>
           </div>
         </div>
 
         {/* Job Info Card */}
-        <div className="glass-card rounded-2xl p-8 mb-6">
-          <h2 className="text-2xl font-semibold text-foreground mb-6 border-b border-border pb-3">Job Information</h2>
-          
-          <div className="space-y-4">
-            {/* Photo Upload Section - Enhanced */}
-            <div className="bg-muted/30 rounded-xl p-4 border border-border">
-              <label className="block text-sm font-medium text-foreground mb-3">
-                <Camera className="inline mr-2 h-5 w-5 text-primary" />
-                Job Photos (Optional)
-                <span className="block text-xs text-muted-foreground mt-1">
-                  Add photos to document the job site and vehicle condition
-                </span>
+        <div className="glass-card rounded-3xl p-6 mb-6">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
+            <div className="p-2 bg-primary/20 rounded-lg">
+              <FileText className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-xl font-semibold text-foreground">Job Information</h2>
+          </div>
+
+          <div className="space-y-5">
+            {/* Photo Upload Section */}
+            <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
+              <label className="flex items-start gap-3 mb-4">
+                <div className="p-2 bg-primary/20 rounded-lg mt-0.5">
+                  <Camera className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <span className="block text-sm font-medium text-foreground">Job Photos</span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">
+                    Document the job site and vehicle condition
+                  </span>
+                </div>
               </label>
-              
-              {/* Upload Button */}
-              <div className="flex gap-2 mb-4">
-                <label className="cursor-pointer bg-primary text-primary-foreground px-4 py-3 rounded-lg hover:bg-primary/90 transition-all inline-flex items-center gap-2 font-medium shadow-lg hover:shadow-xl active:scale-95">
-                  <Camera className="h-5 w-5" />
+
+              <div className="flex gap-3 mb-4">
+                <label className="cursor-pointer bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-5 py-3 rounded-xl hover:opacity-90 transition-all inline-flex items-center gap-2 font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-[0.98]">
+                  <Camera className="h-4 w-4" />
                   Add Photos
                   <input
                     type="file"
@@ -157,30 +178,29 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
                   />
                 </label>
                 {selectedPhotos.length > 0 && (
-                  <span className="text-sm text-muted-foreground flex items-center px-3 bg-accent rounded-lg font-medium">
-                    {selectedPhotos.length} photo{selectedPhotos.length !== 1 ? 's' : ''} selected
+                  <span className="text-sm text-primary flex items-center px-4 bg-primary/10 rounded-xl font-medium border border-primary/20">
+                    {selectedPhotos.length} photo{selectedPhotos.length !== 1 ? 's' : ''}
                   </span>
                 )}
               </div>
-              
-              {/* Photo Preview Grid - Enhanced */}
+
               {selectedPhotos.length > 0 && (
                 <div className="grid grid-cols-3 gap-3">
                   {selectedPhotos.map((photo, index) => (
-                    <div key={index} className="photo-grid-item">
+                    <div key={index} className="photo-grid-item group">
                       <img
                         src={URL.createObjectURL(photo)}
                         alt={`Job photo ${index + 1}`}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <button
                         onClick={() => removePhoto(index)}
-                        className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 hover:bg-destructive/90 shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+                        className="absolute top-2 right-2 bg-destructive/90 backdrop-blur-sm text-white rounded-full p-1.5 shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 hover:bg-destructive"
                       >
-                        <X className="h-4 w-4" />
+                        <X className="h-3.5 w-3.5" />
                       </button>
-                      <span className="absolute bottom-2 left-2 text-xs text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                        Photo {index + 1}
+                      <span className="absolute bottom-2 left-2 text-[10px] text-white/90 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                        {index + 1}
                       </span>
                     </div>
                   ))}
@@ -188,77 +208,97 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Customer Name</label>
-              <input
-                type="text"
-                value={formData.customerName}
-                onChange={(e) => handleInputChange('customerName', e.target.value)}
-                className="w-full p-4 bg-input border-2 border-border rounded-xl focus:border-primary focus:outline-none text-lg text-foreground placeholder:text-muted-foreground transition-colors"
-                placeholder="Enter customer name"
-              />
-            </div>
+            {/* Form Fields */}
+            <div className="space-y-4">
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  Customer Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.customerName}
+                  onChange={(e) => handleInputChange('customerName', e.target.value)}
+                  className="input-modern"
+                  placeholder="Enter customer name"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Invoice Number</label>
-              <input
-                type="text"
-                value={formData.invoiceNumber}
-                onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
-                className="w-full p-4 bg-input border-2 border-border rounded-xl focus:border-primary focus:outline-none text-lg text-foreground placeholder:text-muted-foreground transition-colors"
-                placeholder="Enter invoice number"
-              />
-            </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  Invoice Number
+                </label>
+                <input
+                  type="text"
+                  value={formData.invoiceNumber}
+                  onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
+                  className="input-modern"
+                  placeholder="Enter invoice number"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Vehicle Type</label>
-              <input
-                type="text"
-                value={formData.vehicleType}
-                onChange={(e) => handleInputChange('vehicleType', e.target.value)}
-                className="w-full p-4 bg-input border-2 border-border rounded-xl focus:border-primary focus:outline-none text-lg text-foreground placeholder:text-muted-foreground transition-colors"
-                placeholder="e.g., Freightliner Cascadia"
-              />
-            </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+                  <Truck className="h-4 w-4 text-muted-foreground" />
+                  Vehicle Type
+                </label>
+                <input
+                  type="text"
+                  value={formData.vehicleType}
+                  onChange={(e) => handleInputChange('vehicleType', e.target.value)}
+                  className="input-modern"
+                  placeholder="e.g., Freightliner Cascadia"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Vehicle Weight (lbs)</label>
-              <input
-                type="number"
-                value={formData.vehicleWeight || ''}
-                onChange={(e) => handleInputChange('vehicleWeight', parseInt(e.target.value) || 0)}
-                className="w-full p-4 bg-input border-2 border-border rounded-xl focus:border-primary focus:outline-none text-lg text-foreground placeholder:text-muted-foreground transition-colors"
-                placeholder="Enter weight in pounds"
-              />
-            </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+                  <Scale className="h-4 w-4 text-muted-foreground" />
+                  Vehicle Weight (lbs)
+                </label>
+                <input
+                  type="number"
+                  value={formData.vehicleWeight || ''}
+                  onChange={(e) => handleInputChange('vehicleWeight', parseInt(e.target.value) || 0)}
+                  className="input-modern"
+                  placeholder="Enter weight in pounds"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Description of Recovery and Work Performed</label>
-              <input
-                type="text"
-                value={formData.problemDescription}
-                onChange={(e) => handleInputChange('problemDescription', e.target.value)}
-                className="w-full p-4 bg-input border-2 border-border rounded-xl focus:border-primary focus:outline-none text-lg text-foreground placeholder:text-muted-foreground transition-colors"
-                placeholder="e.g., Rollover recovery, Vehicle extraction"
-              />
-            </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  Description of Work
+                </label>
+                <input
+                  type="text"
+                  value={formData.problemDescription}
+                  onChange={(e) => handleInputChange('problemDescription', e.target.value)}
+                  className="input-modern"
+                  placeholder="e.g., Rollover recovery, Vehicle extraction"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Fuel Surcharge (%)</label>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={formData.fuelSurcharge}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  // Allow empty string, numbers, and decimal points
-                  if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                    handleInputChange('fuelSurcharge', value === '' ? 0 : parseFloat(value) || 0);
-                  }
-                }}
-                className="w-full p-4 bg-input border-2 border-border rounded-xl focus:border-primary focus:outline-none text-lg text-foreground placeholder:text-muted-foreground transition-colors"
-                placeholder="15"
-              />
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+                  <Fuel className="h-4 w-4 text-muted-foreground" />
+                  Fuel Surcharge (%)
+                </label>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={formData.fuelSurcharge}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                      handleInputChange('fuelSurcharge', value === '' ? 0 : parseFloat(value) || 0);
+                    }
+                  }}
+                  className="input-modern"
+                  placeholder="15"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -266,9 +306,10 @@ export default function HomePage({ jobInfo, setJobInfo, selectedPhotos = [], set
         {/* Next Button */}
         <button
           onClick={handleNext}
-          className="w-full bg-primary text-primary-foreground font-bold py-4 px-6 rounded-2xl text-lg shadow-2xl shadow-primary/20 hover:shadow-primary/40 active:scale-95 transition-all"
+          className="w-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold py-4 px-6 rounded-2xl text-lg btn-modern flex items-center justify-center gap-2 group"
         >
-          Select Services →
+          Select Services
+          <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
         </button>
       </div>
     </div>
