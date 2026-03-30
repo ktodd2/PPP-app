@@ -15,13 +15,13 @@ import { Settings, Building2, DollarSign, User } from "lucide-react";
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface CompanySettings {
-  name: string;
-  subtitle: string;
+  companyName: string;
+  companySubtitle: string;
   address: string;
   phone: string;
   email: string;
   website: string;
-  logoPath: string;
+  companyLogo: string;
   defaultFuelSurcharge: number;
   invoiceFooter: string;
 }
@@ -44,13 +44,13 @@ function CompanyInfoTab() {
   );
 
   const [form, setForm] = useState<CompanySettings>({
-    name: "",
-    subtitle: "",
+    companyName: "",
+    companySubtitle: "",
     address: "",
     phone: "",
     email: "",
     website: "",
-    logoPath: "",
+    companyLogo: "",
     defaultFuelSurcharge: 15,
     invoiceFooter: "",
   });
@@ -58,13 +58,13 @@ function CompanyInfoTab() {
   useEffect(() => {
     if (company) {
       setForm({
-        name: company.name ?? "",
-        subtitle: company.subtitle ?? "",
+        companyName: company.companyName ?? "",
+        companySubtitle: company.companySubtitle ?? "",
         address: company.address ?? "",
         phone: company.phone ?? "",
         email: company.email ?? "",
         website: company.website ?? "",
-        logoPath: company.logoPath ?? "",
+        companyLogo: company.companyLogo ?? "",
         defaultFuelSurcharge: company.defaultFuelSurcharge ?? 15,
         invoiceFooter: company.invoiceFooter ?? "",
       });
@@ -109,7 +109,7 @@ function CompanyInfoTab() {
         method: "POST",
         body: JSON.stringify({ logoPath: path }),
       });
-      setForm((f) => ({ ...f, logoPath: path }));
+      setForm((f) => ({ ...f, companyLogo: path }));
       qc.invalidateQueries({ queryKey: ["/api/company"] });
       toast({ title: "Logo uploaded" });
     } catch (err: unknown) {
@@ -146,13 +146,13 @@ function CompanyInfoTab() {
       <div className="space-y-2">
         <Label>Company Logo</Label>
         <div className="flex items-center gap-4">
-          {form.logoPath && (
+          {form.companyLogo && (
             <div className="h-16 w-16 rounded-lg border border-border bg-muted flex items-center justify-center overflow-hidden">
               <img
                 src={
                   supabase.storage
                     .from("company-assets")
-                    .getPublicUrl(form.logoPath).data.publicUrl
+                    .getPublicUrl(form.companyLogo).data.publicUrl
                 }
                 alt="Company logo"
                 className="h-full w-full object-contain"
@@ -180,16 +180,16 @@ function CompanyInfoTab() {
           <Label htmlFor="co-name">Company Name</Label>
           <Input
             id="co-name"
-            value={form.name}
-            onChange={(e) => handleChange("name", e.target.value)}
+            value={form.companyName}
+            onChange={(e) => handleChange("companyName", e.target.value)}
           />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="co-subtitle">Subtitle / Tagline</Label>
           <Input
             id="co-subtitle"
-            value={form.subtitle}
-            onChange={(e) => handleChange("subtitle", e.target.value)}
+            value={form.companySubtitle}
+            onChange={(e) => handleChange("companySubtitle", e.target.value)}
           />
         </div>
         <div className="sm:col-span-2 space-y-1.5">

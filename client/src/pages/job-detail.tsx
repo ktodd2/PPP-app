@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuthQuery } from "@/hooks/use-auth-query";
 import type { CompanySettings, TowingService } from "@shared/schema";
 import { exportToPDF, shareInvoice, type Invoice } from "@/lib/invoice";
+import { supabase } from "@/lib/supabase";
 import {
   FileText,
   Download,
@@ -171,7 +172,13 @@ export default function JobDetailPage() {
             style={{ backgroundColor: "#0077B6" }}
           >
             {companySettings?.companyLogo ? (
-              companySettings.companyLogo.startsWith("/uploads/") ? (
+              companySettings.companyLogo.startsWith("logos/") ? (
+                <img
+                  src={supabase.storage.from("company-assets").getPublicUrl(companySettings.companyLogo).data.publicUrl}
+                  alt="Company Logo"
+                  className="w-16 h-16 object-contain mx-auto rounded-lg mb-3 bg-white/10 p-1"
+                />
+              ) : companySettings.companyLogo.startsWith("/uploads/") ? (
                 <img
                   src={companySettings.companyLogo}
                   alt="Company Logo"
