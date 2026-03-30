@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { fetchWithAuth } from '@/lib/queryClient';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/use-auth';
 import { useLocation } from 'wouter';
 import type { Job, TowingService, CompanySettings, User } from '@shared/schema';
@@ -51,14 +52,10 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
   // Mutation for updating service rates
   const updateServiceMutation = useMutation({
     mutationFn: async ({ id, rate }: { id: number; rate: string }) => {
-      const response = await fetch(`/api/services/${id}`, {
+      const response = await fetchWithAuth(`/api/services/${id}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ rate })
       });
-      if (!response.ok) throw new Error('Failed to update service rate');
       return response.json();
     },
     onSuccess: () => {
@@ -69,14 +66,10 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
   // Mutation for updating company settings
   const updateCompanyMutation = useMutation({
     mutationFn: async (settings: Partial<CompanySettings>) => {
-      const response = await fetch('/api/company', {
+      const response = await fetchWithAuth('/api/company', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(settings)
       });
-      if (!response.ok) throw new Error('Failed to update company settings');
       return response.json();
     },
     onSuccess: () => {
@@ -132,8 +125,13 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
     formData.append('logo', file);
 
     try {
+      // For FormData uploads, we need to manually add auth but NOT set Content-Type
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+
       const response = await fetch('/api/company/logo', {
         method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData
       });
 
@@ -148,7 +146,7 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
     } catch (error) {
       console.error('Error uploading logo:', error);
     }
-    
+
     // Clear the input
     event.target.value = '';
   };
