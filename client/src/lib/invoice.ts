@@ -1,6 +1,7 @@
 import type { TowingService } from './services';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { supabase } from './supabase';
 
 export interface JobInfo {
   customerName: string;
@@ -126,7 +127,10 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
     
     // Create logo HTML
     let logoHtml = '';
-    if (companyLogo.startsWith('/uploads/')) {
+    if (companyLogo.startsWith('logos/')) {
+      const logoUrl = supabase.storage.from("company-assets").getPublicUrl(companyLogo).data.publicUrl;
+      logoHtml = `<img src="${logoUrl}" alt="Company Logo" style="width: 64px; height: 64px; object-fit: contain; margin: 0 auto 10px auto; display: block;" crossorigin="anonymous" />`;
+    } else if (companyLogo.startsWith('/uploads/')) {
       logoHtml = `<img src="${companyLogo}" alt="Company Logo" style="width: 64px; height: 64px; object-fit: contain; margin: 0 auto 10px auto; display: block;" />`;
     } else {
       logoHtml = `<div style="font-size: 48px; margin-bottom: 10px;">${companyLogo}</div>`;
