@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, decimal, timestamp, varchar, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, decimal, timestamp, varchar, pgEnum, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -20,11 +20,12 @@ export type Company = typeof companies.$inferSelect;
 // User role enum
 export const userRoleEnum = pgEnum("user_role", ["admin", "user"]);
 
-// Users table for authentication
+// Users table for authentication (linked to Supabase Auth)
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: varchar("username", { length: 255 }).notNull().unique(),
-  password: varchar("password", { length: 255 }).notNull(),
+  authId: uuid("auth_id").unique(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  displayName: varchar("display_name", { length: 255 }),
   role: userRoleEnum("role").notNull().default("user"),
   companyId: integer("company_id").references(() => companies.id),
   createdAt: timestamp("created_at").defaultNow(),

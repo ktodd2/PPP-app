@@ -1,12 +1,7 @@
-import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
-import { Express } from "express";
-import session from "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
+import { Request, Response, NextFunction } from "express";
+import { supabaseAdmin } from "./supabase";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
-import connectPg from "connect-pg-simple";
 
 declare global {
   namespace Express {
@@ -14,101 +9,50 @@ declare global {
   }
 }
 
-const scryptAsync = promisify(scrypt);
+// Middleware to extract and verify Supabase JWT, attach user profile to req.user
+export async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
 
-async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
-}
+  const token = authHeader.split(" ")[1];
 
-async function comparePasswords(supplied: string, stored: string) {
   try {
-    const [hashed, salt] = stored.split(".");
-    if (!hashed || !salt) {
-      return false;
+    const { data: { user: authUser }, error } = await supabaseAdmin.auth.getUser(token);
+    if (error || !authUser) {
+      return res.status(401).json({ message: "Invalid or expired token" });
     }
-    const hashedBuf = Buffer.from(hashed, "hex");
-    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-    return timingSafeEqual(hashedBuf, suppliedBuf);
-  } catch (error) {
-    console.error("Password comparison error:", error);
-    return false;
+
+    // Get the app user profile linked to this auth user
+    let profile = await storage.getUserByAuthId(authUser.id);
+
+    // Auto-create profile on first login
+    if (!profile) {
+      profile = await storage.createUser({
+        authId: authUser.id,
+        email: authUser.email || "",
+        displayName: authUser.user_metadata?.display_name || authUser.email?.split("@")[0] || "User",
+      });
+      // Seed default company settings
+      await storage.seedCompanySettings(profile.id);
+    }
+
+    req.user = profile;
+    next();
+  } catch (err) {
+    console.error("Auth middleware error:", err);
+    return res.status(401).json({ message: "Authentication failed" });
   }
 }
 
-export function setupAuth(app: Express) {
-  const PostgresSessionStore = connectPg(session);
-  
-  const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "your-secret-key-change-this",
-    resave: false,
-    saveUninitialized: false,
-    store: new PostgresSessionStore({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true,
-    }),
-  };
-
-  app.set("trust proxy", 1);
-  app.use(session(sessionSettings));
-  app.use(passport.initialize());
-  app.use(passport.session());
-
-  passport.use(
-    new LocalStrategy(async (username, password, done) => {
-      const user = await storage.getUserByUsername(username);
-      if (!user || !(await comparePasswords(password, user.password))) {
-        return done(null, false);
-      } else {
-        return done(null, user);
-      }
-    }),
-  );
-
-  passport.serializeUser((user, done) => done(null, user.id));
-  passport.deserializeUser(async (id: number, done) => {
-    try {
-      const user = await storage.getUser(id);
-      if (!user) {
-        return done(null, false);
-      }
-      done(null, user);
-    } catch (error) {
-      done(error, null);
+// Middleware for admin-only routes
+export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  // requireAuth must run first
+  await requireAuth(req, res, () => {
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
     }
-  });
-
-  app.post("/api/register", async (req, res, next) => {
-    const existingUser = await storage.getUserByUsername(req.body.username);
-    if (existingUser) {
-      return res.status(400).send("Username already exists");
-    }
-
-    const user = await storage.createUser({
-      ...req.body,
-      password: await hashPassword(req.body.password),
-    });
-
-    req.login(user, (err) => {
-      if (err) return next(err);
-      res.status(201).json(user);
-    });
-  });
-
-  app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    res.status(200).json(req.user);
-  });
-
-  app.post("/api/logout", (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      res.sendStatus(200);
-    });
-  });
-
-  app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    res.json(req.user);
+    next();
   });
 }

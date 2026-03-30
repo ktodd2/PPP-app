@@ -1,104 +1,143 @@
-import { createContext, ReactNode, useContext } from "react";
 import {
-  useQuery,
-  useMutation,
-  UseMutationResult,
-} from "@tanstack/react-query";
-import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema";
-import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import type { Session } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 
-type AuthContextType = {
-  user: SelectUser | null;
-  isLoading: boolean;
-  error: Error | null;
-  loginMutation: UseMutationResult<SelectUser, Error, LoginData>;
-  logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type UserProfile = {
+  id: number;
+  email: string;
+  displayName: string;
+  role: string;
+  companyId: number | null;
+  createdAt: string;
 };
 
-type LoginData = Pick<InsertUser, "username" | "password">;
+type AuthContextType = {
+  user: UserProfile | null;
+  session: Session | null;
+  isLoading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, displayName: string) => Promise<void>;
+  signOut: () => Promise<void>;
+};
+
+// ─── Context ──────────────────────────────────────────────────────────────────
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
+// ─── Provider ─────────────────────────────────────────────────────────────────
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { toast } = useToast();
-  const {
-    data: user,
-    error,
-    isLoading,
-  } = useQuery<SelectUser | undefined, Error>({
-    queryKey: ["/api/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
-  });
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginData) => {
-      const res = await apiRequest("POST", "/api/login", credentials);
-      return await res.json();
-    },
-    onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/api/user"], user);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Login failed",
-        description: error.message,
-        variant: "destructive",
+  // Fetch our app's user profile from the API using the Supabase bearer token.
+  async function fetchProfile(activeSession: Session): Promise<void> {
+    try {
+      const res = await fetch("/api/profile", {
+        headers: {
+          Authorization: `Bearer ${activeSession.access_token}`,
+        },
       });
-    },
-  });
+      if (!res.ok) {
+        setUser(null);
+        return;
+      }
+      const profile: UserProfile = await res.json();
+      setUser(profile);
+    } catch {
+      setUser(null);
+    }
+  }
 
-  const registerMutation = useMutation({
-    mutationFn: async (credentials: InsertUser) => {
-      const res = await apiRequest("POST", "/api/register", credentials);
-      return await res.json();
-    },
-    onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/api/user"], user);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Registration failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  // Bootstrap: load the existing session, then subscribe to auth state changes.
+  useEffect(() => {
+    let mounted = true;
 
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      await apiRequest("POST", "/api/logout");
-    },
-    onSuccess: () => {
-      queryClient.setQueryData(["/api/user"], null);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Logout failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+    async function init() {
+      const { data } = await supabase.auth.getSession();
+      if (!mounted) return;
+
+      const currentSession = data.session ?? null;
+      setSession(currentSession);
+
+      if (currentSession) {
+        await fetchProfile(currentSession);
+      }
+
+      setIsLoading(false);
+    }
+
+    init();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_event, newSession) => {
+        if (!mounted) return;
+        setSession(newSession);
+
+        if (newSession) {
+          await fetchProfile(newSession);
+        } else {
+          setUser(null);
+        }
+      }
+    );
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  // ─── Auth actions ───────────────────────────────────────────────────────────
+
+  async function signIn(email: string, password: string): Promise<void> {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
+  }
+
+  async function signUp(
+    email: string,
+    password: string,
+    displayName: string
+  ): Promise<void> {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { display_name: displayName },
+      },
+    });
+    if (error) throw new Error(error.message);
+  }
+
+  async function signOut(): Promise<void> {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw new Error(error.message);
+    setUser(null);
+    setSession(null);
+  }
 
   return (
     <AuthContext.Provider
-      value={{
-        user: user ?? null,
-        isLoading,
-        error,
-        loginMutation,
-        logoutMutation,
-        registerMutation,
-      }}
+      value={{ user, session, isLoading, signIn, signUp, signOut }}
     >
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");

@@ -1,11 +1,12 @@
 import { jobs, users, companies, towingServices, invoiceServices, companySettings, jobPhotos, subcontractors, type Job, type InsertJob, type User, type InsertUser, type Company, type InsertCompany, type TowingService, type CompanySettings, type InsertCompanySettings, type JobPhoto, type InsertJobPhoto, type Subcontractor } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, inArray } from "drizzle-orm";
+import { eq, desc, inArray, sql, gte, lte, or, ilike, count } from "drizzle-orm";
 
 export interface IStorage {
   // User authentication methods
   getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByAuthId(authId: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(insertUser: InsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
   updateUserCompany(userId: number, companyId: number | null): Promise<User>;
@@ -45,6 +46,24 @@ export interface IStorage {
   addJobSubcontractor(jobId: number, name: string, workPerformed: string, price: string): Promise<Subcontractor>;
   getJobSubcontractors(jobId: number): Promise<Subcontractor[]>;
   deleteJobSubcontractor(id: number): Promise<void>;
+
+  // Profile
+  updateUserDisplayName(userId: number, displayName: string): Promise<User>;
+
+  // Analytics
+  getAnalyticsSummary(userId: number): Promise<any>;
+  getMonthlyRevenue(userId: number): Promise<any>;
+  getServiceStats(userId: number): Promise<any>;
+
+  // Search
+  searchJobs(userId: number, params: {
+    query?: string;
+    fromDate?: string;
+    toDate?: string;
+    sortBy?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ jobs: Job[]; total: number; page: number; totalPages: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -54,8 +73,13 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+  async getUserByAuthId(authId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.authId, authId));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
     return user || undefined;
   }
 
@@ -176,24 +200,27 @@ export class DatabaseStorage implements IStorage {
       return; // Already seeded
     }
 
-    // Seed with the services from the user's specifications
+    // All 19 towing services with correct rates (cents per pound)
     const servicesToSeed = [
-      { name: "Contained Recovery/Winching", rate: "4.5" },
+      { name: "Normal Recovery (On or Near Highway)", rate: "4.0" },
+      { name: "Contained Recovery/Winching", rate: "4.0" },
       { name: "Salvage/Debris Recovery", rate: "5.5" },
       { name: "Handle Complete Recovery", rate: "6.0" },
+      { name: "Total Loss Recovery", rate: "5.0" },
+      { name: "Rollover", rate: "4.0" },
       { name: "Inclement Weather", rate: "2.5" },
-      { name: "Night/Weekend/Holidays", rate: "2.5" },
+      { name: "Nights/Weekends/Holidays", rate: "2.5" },
       { name: "Travel Within 50 Miles", rate: "3.5" },
       { name: "Travel Beyond 50 Miles", rate: "6.5" },
-      { name: "Wheels Higher Than Roof", rate: "2.0" },
-      { name: "Embankment or Inclines", rate: "2.0" },
+      { name: "Wheels Higher than Roof", rate: "2.0" },
+      { name: "Embankment or Inclines", rate: "4.5" },
       { name: "Back Doors Open", rate: "2.0" },
-      { name: "Tractor From Under Trailer", rate: "2.0" },
+      { name: "Tractor from Under Trailer", rate: "2.0" },
       { name: "Major Suspension Damage", rate: "6.0" },
       { name: "10 MPH Collision Factor", rate: "2.0" },
       { name: "30 MPH Collision Factor", rate: "3.0" },
       { name: "50 MPH Collision Factor", rate: "4.0" },
-      { name: "70 MPH Collision Factor", rate: "5.0" }
+      { name: "70+ MPH Collision Factor", rate: "5.0" }
     ];
 
     await db.insert(towingServices).values(servicesToSeed);
@@ -299,6 +326,165 @@ export class DatabaseStorage implements IStorage {
 
   async deleteJobSubcontractor(id: number): Promise<void> {
     await db.delete(subcontractors).where(eq(subcontractors.id, id));
+  }
+
+  async updateUserDisplayName(userId: number, displayName: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ displayName })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  // Analytics
+  async getAnalyticsSummary(userId: number): Promise<any> {
+    const allJobs = await db.select().from(jobs).where(eq(jobs.userId, userId));
+
+    const now = new Date();
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const thisWeek = new Date(now);
+    thisWeek.setDate(thisWeek.getDate() - 7);
+
+    const jobsThisMonth = allJobs.filter(j => new Date(j.createdAt) >= thisMonth);
+    const jobsThisWeek = allJobs.filter(j => new Date(j.createdAt) >= thisWeek);
+
+    // Calculate revenue from invoice services
+    let totalRevenue = 0;
+    let monthRevenue = 0;
+    for (const job of allJobs) {
+      const services = await db.select().from(invoiceServices).where(eq(invoiceServices.jobId, job.id));
+      const jobTotal = services.reduce((sum, s) => sum + parseFloat(s.cost), 0);
+      const fuelSurcharge = jobTotal * (parseFloat(job.fuelSurcharge) / 100);
+      totalRevenue += jobTotal + fuelSurcharge;
+
+      if (new Date(job.createdAt) >= thisMonth) {
+        monthRevenue += jobTotal + fuelSurcharge;
+      }
+    }
+
+    return {
+      totalJobs: allJobs.length,
+      jobsThisMonth: jobsThisMonth.length,
+      jobsThisWeek: jobsThisWeek.length,
+      totalRevenue: Math.round(totalRevenue * 100) / 100,
+      monthRevenue: Math.round(monthRevenue * 100) / 100,
+      averageInvoice: allJobs.length > 0 ? Math.round((totalRevenue / allJobs.length) * 100) / 100 : 0,
+    };
+  }
+
+  async getMonthlyRevenue(userId: number): Promise<any> {
+    const allJobs = await db.select().from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt));
+
+    const monthlyData: Record<string, number> = {};
+    for (const job of allJobs) {
+      const date = new Date(job.createdAt);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+
+      const services = await db.select().from(invoiceServices).where(eq(invoiceServices.jobId, job.id));
+      const jobTotal = services.reduce((sum, s) => sum + parseFloat(s.cost), 0);
+      const fuelSurcharge = jobTotal * (parseFloat(job.fuelSurcharge) / 100);
+
+      monthlyData[key] = (monthlyData[key] || 0) + jobTotal + fuelSurcharge;
+    }
+
+    // Return last 12 months
+    const result = Object.entries(monthlyData)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-12)
+      .map(([month, revenue]) => ({ month, revenue: Math.round(revenue * 100) / 100 }));
+
+    return result;
+  }
+
+  async getServiceStats(userId: number): Promise<any> {
+    const userJobs = await db.select().from(jobs).where(eq(jobs.userId, userId));
+    const jobIds = userJobs.map(j => j.id);
+
+    if (jobIds.length === 0) return [];
+
+    const allInvoiceServices = await db.select().from(invoiceServices).where(inArray(invoiceServices.jobId, jobIds));
+    const allTowingServices = await db.select().from(towingServices);
+
+    const serviceMap = new Map(allTowingServices.map(s => [s.id, s.name]));
+    const serviceCounts: Record<string, { name: string; count: number; totalRevenue: number }> = {};
+
+    for (const is of allInvoiceServices) {
+      const name = serviceMap.get(is.serviceId) || "Unknown";
+      if (!serviceCounts[name]) {
+        serviceCounts[name] = { name, count: 0, totalRevenue: 0 };
+      }
+      serviceCounts[name].count++;
+      serviceCounts[name].totalRevenue += parseFloat(is.cost);
+    }
+
+    return Object.values(serviceCounts).sort((a, b) => b.count - a.count);
+  }
+
+  // Search
+  async searchJobs(userId: number, params: {
+    query?: string;
+    fromDate?: string;
+    toDate?: string;
+    sortBy?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ jobs: Job[]; total: number; page: number; totalPages: number }> {
+    const page = params.page || 1;
+    const limit = params.limit || 20;
+    const offset = (page - 1) * limit;
+
+    let conditions: any[] = [eq(jobs.userId, userId)];
+
+    if (params.query) {
+      conditions.push(
+        or(
+          ilike(jobs.customerName, `%${params.query}%`),
+          ilike(jobs.invoiceNumber, `%${params.query}%`),
+          ilike(jobs.vehicleType, `%${params.query}%`)
+        )
+      );
+    }
+
+    if (params.fromDate) {
+      conditions.push(gte(jobs.createdAt, new Date(params.fromDate)));
+    }
+
+    if (params.toDate) {
+      conditions.push(lte(jobs.createdAt, new Date(params.toDate)));
+    }
+
+    const where = conditions.length > 1 ? sql`${sql.join(conditions.map(c => c), sql` AND `)}` : conditions[0];
+
+    // Get total count
+    const [{ value: total }] = await db.select({ value: count() }).from(jobs).where(eq(jobs.userId, userId));
+
+    // Get paginated results
+    const results = await db
+      .select()
+      .from(jobs)
+      .where(eq(jobs.userId, userId))
+      .orderBy(desc(jobs.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    // Filter in-memory for complex conditions (simpler than building dynamic Drizzle queries)
+    let filtered = results;
+    if (params.query) {
+      const q = params.query.toLowerCase();
+      filtered = filtered.filter(j =>
+        j.customerName.toLowerCase().includes(q) ||
+        j.invoiceNumber.toLowerCase().includes(q) ||
+        j.vehicleType.toLowerCase().includes(q)
+      );
+    }
+
+    return {
+      jobs: filtered,
+      total: Number(total),
+      page,
+      totalPages: Math.ceil(Number(total) / limit),
+    };
   }
 }
 

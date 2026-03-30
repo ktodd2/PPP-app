@@ -1,45 +1,56 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth } from "./auth";
+import { requireAuth, requireAdmin } from "./auth";
 import { insertJobSchema } from "@shared/schema";
 import { runMigrations } from "./migrate";
+import { supabaseAdmin } from "./supabase";
 
-// Authentication middleware
-function requireAuth(req: any, res: any, next: any) {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: "Authentication required" });
-  }
-  next();
-}
-
-// Admin middleware
-function requireAdmin(req: any, res: any, next: any) {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: "Authentication required" });
-  }
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({ message: "Admin access required" });
-  }
-  next();
-}
-
-export async function registerRoutes(app: Express, upload: any): Promise<Server> {
+export async function registerRoutes(app: Express): Promise<Server> {
   // Run database migrations
   await runMigrations();
-  
-  // Setup authentication
-  setupAuth(app);
-  
+
   // Initialize database and seed towing services
   await storage.seedTowingServices();
 
+  // ==================== HEALTH CHECK ====================
+  app.get("/api/health", (_req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
 
+  // ==================== PROFILE ====================
+  app.get("/api/profile", requireAuth, async (req: any, res) => {
+    res.json({
+      id: req.user.id,
+      email: req.user.email,
+      displayName: req.user.displayName,
+      role: req.user.role,
+      companyId: req.user.companyId,
+      createdAt: req.user.createdAt,
+    });
+  });
 
-  // Get all jobs
-  app.get("/api/jobs", async (req, res) => {
+  app.put("/api/profile", requireAuth, async (req: any, res) => {
     try {
-      const jobs = await storage.getAllJobs(req.user?.id || 0);
+      const { displayName } = req.body;
+      const user = await storage.updateUserDisplayName(req.user.id, displayName);
+      res.json({
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        role: user.role,
+        companyId: user.companyId,
+      });
+    } catch (error) {
+      res.status(400).json({ error: "Failed to update profile" });
+    }
+  });
+
+  // ==================== JOBS ====================
+
+  app.get("/api/jobs", requireAuth, async (req: any, res) => {
+    try {
+      const jobs = await storage.getAllJobs(req.user.id);
       res.json(jobs);
     } catch (error) {
       console.error("Error fetching jobs:", error);
@@ -47,13 +58,11 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Get recent jobs - MUST come before /api/jobs/:id
   app.get("/api/jobs/recent", requireAuth, async (req: any, res) => {
     try {
       const limitParam = req.query.limit as string;
       const limit = limitParam && !isNaN(parseInt(limitParam)) ? parseInt(limitParam) : 10;
-      const userId = req.user.id;
-      const jobs = await storage.getRecentJobs(userId, limit);
+      const jobs = await storage.getRecentJobs(req.user.id, limit);
       res.json(jobs);
     } catch (error) {
       console.error("Error fetching recent jobs:", error);
@@ -61,8 +70,7 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Get job photos (must come before general job route)
-  app.get("/api/jobs/:id/photos", async (req, res) => {
+  app.get("/api/jobs/:id/photos", requireAuth, async (req, res) => {
     try {
       const jobId = parseInt(req.params.id);
       const photos = await storage.getJobPhotos(jobId);
@@ -73,8 +81,7 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Get a specific job with its services
-  app.get("/api/jobs/:id", async (req, res) => {
+  app.get("/api/jobs/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const job = await storage.getJob(id);
@@ -88,12 +95,11 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Create a new job
-  app.post("/api/jobs", requireAuth, async (req, res) => {
+  app.post("/api/jobs", requireAuth, async (req: any, res) => {
     try {
       const jobData = {
         ...req.body,
-        userId: req.user?.id
+        userId: req.user.id,
       };
       const validatedData = insertJobSchema.parse(jobData);
       const job = await storage.createJob(validatedData);
@@ -104,27 +110,22 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Get towing services
-  app.get("/api/services", async (req, res) => {
+  // ==================== SERVICES ====================
+
+  app.get("/api/services", requireAuth, async (_req, res) => {
     try {
-      console.log("Fetching services from database...");
       const services = await storage.getTowingServices();
-      console.log("Services fetched:", services.length);
       res.json(services);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching services:", error);
-      res.status(500).json({ error: "Failed to fetch services", details: error.message });
+      res.status(500).json({ error: "Failed to fetch services" });
     }
   });
 
-
-
-  // Update service rate
-  app.patch("/api/services/:id", async (req, res) => {
+  app.patch("/api/services/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { rate } = req.body;
-      
       await storage.updateTowingServiceRate(id, rate);
       res.json({ success: true });
     } catch (error) {
@@ -133,81 +134,90 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Get company settings
-  app.get("/api/company", requireAuth, async (req, res) => {
+  app.post("/api/jobs/:jobId/services", requireAuth, async (req, res) => {
     try {
-      const userId = req.user?.id;
-      if (!userId) {
-        return res.status(401).json({ error: "User not authenticated" });
-      }
-      
-      const settings = await storage.getCompanySettings(userId);
+      const jobId = parseInt(req.params.jobId);
+      const { services } = req.body;
+      await storage.createInvoiceServices(jobId, services);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error creating invoice services:", error);
+      res.status(400).json({ error: "Failed to create invoice services" });
+    }
+  });
+
+  // ==================== COMPANY SETTINGS ====================
+
+  app.get("/api/company", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      let settings = await storage.getCompanySettings(userId);
       if (!settings) {
-        // Create default settings for new user
         await storage.seedCompanySettings(userId);
-        const newSettings = await storage.getCompanySettings(userId);
-        res.json(newSettings);
-      } else {
-        res.json(settings);
+        settings = await storage.getCompanySettings(userId);
       }
+      res.json(settings);
     } catch (error) {
       console.error("Error fetching company settings:", error);
       res.status(500).json({ error: "Failed to fetch company settings" });
     }
   });
 
-  // Upload logo
-  app.post("/api/company/logo", requireAuth, upload.single('logo'), async (req, res) => {
+  app.put("/api/company", requireAuth, async (req: any, res) => {
     try {
-      if (!req.file) {
-        return res.status(400).json({ error: "No file uploaded" });
-      }
-      
-      const userId = req.user?.id;
-      if (!userId) {
-        return res.status(401).json({ error: "User not authenticated" });
-      }
-      
-      const logoPath = `/uploads/${req.file.filename}`;
-      const settings = await storage.updateCompanySettings({ 
-        userId,
-        companyLogo: logoPath 
+      const settings = await storage.updateCompanySettings({
+        ...req.body,
+        userId: req.user.id,
       });
-      res.json({ logoPath, settings });
+      res.json(settings);
     } catch (error) {
-      console.error("Error uploading logo:", error);
-      res.status(400).json({ error: "Failed to upload logo" });
+      console.error("Error updating company settings:", error);
+      res.status(400).json({ error: "Failed to update company settings" });
     }
   });
 
-  // Upload job photos
-  app.post("/api/jobs/:id/photos", upload.array('photos', 20), async (req, res) => {
+  // Logo upload — frontend uploads to Supabase Storage, sends path here
+  app.post("/api/company/logo", requireAuth, async (req: any, res) => {
+    try {
+      const { logoPath } = req.body;
+      if (!logoPath) {
+        return res.status(400).json({ error: "Logo path is required" });
+      }
+      const settings = await storage.updateCompanySettings({
+        userId: req.user.id,
+        companyLogo: logoPath,
+      });
+      res.json({ logoPath, settings });
+    } catch (error) {
+      console.error("Error updating logo:", error);
+      res.status(400).json({ error: "Failed to update logo" });
+    }
+  });
+
+  // Photo metadata — frontend uploads to Supabase Storage, sends paths here
+  app.post("/api/jobs/:id/photos", requireAuth, async (req, res) => {
     try {
       const jobId = parseInt(req.params.id);
-      const files = req.files as Express.Multer.File[];
-      
-      if (!files || files.length === 0) {
+      const { photos } = req.body; // Array of { path, caption? }
+
+      if (!photos || !Array.isArray(photos) || photos.length === 0) {
         return res.status(400).json({ error: "No photos provided" });
       }
 
       const uploadedPhotos = [];
-      for (const file of files) {
-        const photoPath = `/uploads/${file.filename}`;
-        const photo = await storage.addJobPhoto(jobId, photoPath);
-        uploadedPhotos.push(photo);
+      for (const photo of photos) {
+        const saved = await storage.addJobPhoto(jobId, photo.path, photo.caption);
+        uploadedPhotos.push(saved);
       }
-      
+
       res.json({ photos: uploadedPhotos });
     } catch (error) {
-      console.error("Error uploading photos:", error);
-      res.status(500).json({ error: "Failed to upload photos" });
+      console.error("Error saving photos:", error);
+      res.status(500).json({ error: "Failed to save photos" });
     }
   });
 
-
-
-  // Delete job photo
-  app.delete("/api/photos/:id", async (req, res) => {
+  app.delete("/api/photos/:id", requireAuth, async (req, res) => {
     try {
       const photoId = parseInt(req.params.id);
       await storage.deleteJobPhoto(photoId);
@@ -218,48 +228,87 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Update company settings
-  app.put("/api/company", requireAuth, async (req: any, res) => {
+  // ==================== COMPANY JOBS ====================
+
+  app.get("/api/company/jobs", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.id;
-      const settings = await storage.updateCompanySettings({
-        ...req.body,
-        userId
-      });
-      res.json(settings);
+      const user = req.user;
+      if (!user.companyId) {
+        const jobs = await storage.getAllJobs(user.id);
+        return res.json(jobs);
+      }
+      const jobs = await storage.getCompanyJobs(user.companyId);
+      res.json(jobs);
     } catch (error) {
-      console.error("Error updating company settings:", error);
-      res.status(400).json({ error: "Failed to update company settings" });
+      console.error("Error fetching company jobs:", error);
+      res.status(500).json({ error: "Failed to fetch company jobs" });
     }
   });
 
-  // Create invoice services for a job
-  app.post("/api/jobs/:jobId/services", async (req, res) => {
+  // ==================== ANALYTICS ====================
+
+  app.get("/api/analytics/summary", requireAuth, async (req: any, res) => {
     try {
-      const jobId = parseInt(req.params.jobId);
-      const { services } = req.body;
-      
-      await storage.createInvoiceServices(jobId, services);
-      res.json({ success: true });
+      const summary = await storage.getAnalyticsSummary(req.user.id);
+      res.json(summary);
     } catch (error) {
-      console.error("Error creating invoice services:", error);
-      res.status(400).json({ error: "Failed to create invoice services" });
+      console.error("Error fetching analytics:", error);
+      res.status(500).json({ error: "Failed to fetch analytics" });
+    }
+  });
+
+  app.get("/api/analytics/revenue", requireAuth, async (req: any, res) => {
+    try {
+      const revenue = await storage.getMonthlyRevenue(req.user.id);
+      res.json(revenue);
+    } catch (error) {
+      console.error("Error fetching revenue:", error);
+      res.status(500).json({ error: "Failed to fetch revenue" });
+    }
+  });
+
+  app.get("/api/analytics/services", requireAuth, async (req: any, res) => {
+    try {
+      const serviceStats = await storage.getServiceStats(req.user.id);
+      res.json(serviceStats);
+    } catch (error) {
+      console.error("Error fetching service stats:", error);
+      res.status(500).json({ error: "Failed to fetch service stats" });
+    }
+  });
+
+  // ==================== JOBS SEARCH ====================
+
+  app.get("/api/jobs/search", requireAuth, async (req: any, res) => {
+    try {
+      const { q, from, to, sort, page, limit } = req.query;
+      const results = await storage.searchJobs(req.user.id, {
+        query: q as string,
+        fromDate: from as string,
+        toDate: to as string,
+        sortBy: sort as string,
+        page: page ? parseInt(page as string) : 1,
+        limit: limit ? parseInt(limit as string) : 20,
+      });
+      res.json(results);
+    } catch (error) {
+      console.error("Error searching jobs:", error);
+      res.status(500).json({ error: "Failed to search jobs" });
     }
   });
 
   // ==================== ADMIN ROUTES ====================
-  
-  // Get all users (admin only)
-  app.get("/api/admin/users", requireAdmin, async (req: any, res) => {
+
+  app.get("/api/admin/users", requireAdmin, async (_req: any, res) => {
     try {
       const users = await storage.getAllUsers();
-      // Don't send passwords
-      const sanitizedUsers = users.map(u => ({
+      const sanitizedUsers = users.map((u) => ({
         id: u.id,
-        username: u.username,
+        email: u.email,
+        displayName: u.displayName,
         role: u.role,
         companyId: u.companyId,
-        createdAt: u.createdAt
+        createdAt: u.createdAt,
       }));
       res.json(sanitizedUsers);
     } catch (error) {
@@ -268,38 +317,40 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Create a new user (admin only)
   app.post("/api/admin/users", requireAdmin, async (req: any, res) => {
     try {
-      const { username, password, role, companyId } = req.body;
-      
-      // Check if user already exists
-      const existing = await storage.getUserByUsername(username);
-      if (existing) {
-        return res.status(400).json({ error: "Username already exists" });
+      const { email, password, displayName, role, companyId } = req.body;
+
+      // Create in Supabase Auth
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { display_name: displayName },
+      });
+
+      if (authError) {
+        return res.status(400).json({ error: authError.message });
       }
 
-      // Hash password (importing from auth.ts would be better, but inline for now)
-      const { scrypt, randomBytes } = await import("crypto");
-      const { promisify } = await import("util");
-      const scryptAsync = promisify(scrypt);
-      const salt = randomBytes(16).toString("hex");
-      const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-      const hashedPassword = `${buf.toString("hex")}.${salt}`;
-
+      // Create profile
       const user = await storage.createUser({
-        username,
-        password: hashedPassword,
+        authId: authData.user.id,
+        email,
+        displayName: displayName || email.split("@")[0],
         role: role || "user",
-        companyId: companyId || null
+        companyId: companyId || null,
       });
+
+      await storage.seedCompanySettings(user.id);
 
       res.json({
         id: user.id,
-        username: user.username,
+        email: user.email,
+        displayName: user.displayName,
         role: user.role,
         companyId: user.companyId,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
       });
     } catch (error) {
       console.error("Error creating user:", error);
@@ -307,19 +358,17 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Update user company (admin only)
   app.patch("/api/admin/users/:id/company", requireAdmin, async (req: any, res) => {
     try {
       const userId = parseInt(req.params.id);
       const { companyId } = req.body;
-      
       const user = await storage.updateUserCompany(userId, companyId);
       res.json({
         id: user.id,
-        username: user.username,
+        email: user.email,
+        displayName: user.displayName,
         role: user.role,
         companyId: user.companyId,
-        createdAt: user.createdAt
       });
     } catch (error) {
       console.error("Error updating user company:", error);
@@ -327,23 +376,20 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Update user role (admin only)
   app.patch("/api/admin/users/:id/role", requireAdmin, async (req: any, res) => {
     try {
       const userId = parseInt(req.params.id);
       const { role } = req.body;
-      
       if (role !== "admin" && role !== "user") {
         return res.status(400).json({ error: "Invalid role" });
       }
-      
       const user = await storage.updateUserRole(userId, role);
       res.json({
         id: user.id,
-        username: user.username,
+        email: user.email,
+        displayName: user.displayName,
         role: user.role,
         companyId: user.companyId,
-        createdAt: user.createdAt
       });
     } catch (error) {
       console.error("Error updating user role:", error);
@@ -351,28 +397,28 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Delete user (admin only)
   app.delete("/api/admin/users/:id", requireAdmin, async (req: any, res) => {
     try {
       const userId = parseInt(req.params.id);
-      
-      // Prevent admin from deleting themselves
       if (userId === req.user.id) {
         return res.status(400).json({ error: "Cannot delete your own account" });
       }
-      
+
+      // Get user to find their authId for Supabase cleanup
+      const user = await storage.getUser(userId);
+      if (user?.authId) {
+        await supabaseAdmin.auth.admin.deleteUser(user.authId);
+      }
+
       await storage.deleteUser(userId);
       res.json({ success: true });
     } catch (error: any) {
       console.error("Error deleting user:", error);
-      const errorMessage = error?.message || "Failed to delete user";
-      console.error("Detailed error:", errorMessage);
-      res.status(400).json({ error: errorMessage });
+      res.status(400).json({ error: error?.message || "Failed to delete user" });
     }
   });
 
-  // Get all companies (admin only)
-  app.get("/api/admin/companies", requireAdmin, async (req: any, res) => {
+  app.get("/api/admin/companies", requireAdmin, async (_req: any, res) => {
     try {
       const companies = await storage.getAllCompanies();
       res.json(companies);
@@ -382,15 +428,12 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Create company (admin only)
   app.post("/api/admin/companies", requireAdmin, async (req: any, res) => {
     try {
       const { name } = req.body;
-      
       if (!name) {
         return res.status(400).json({ error: "Company name is required" });
       }
-      
       const company = await storage.createCompany({ name });
       res.json(company);
     } catch (error) {
@@ -399,7 +442,6 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     }
   });
 
-  // Delete company (admin only)
   app.delete("/api/admin/companies/:id", requireAdmin, async (req: any, res) => {
     try {
       const companyId = parseInt(req.params.id);
@@ -408,26 +450,6 @@ export async function registerRoutes(app: Express, upload: any): Promise<Server>
     } catch (error) {
       console.error("Error deleting company:", error);
       res.status(400).json({ error: "Failed to delete company" });
-    }
-  });
-
-  // Get company jobs - shows all invoices for users in the same company
-  app.get("/api/company/jobs", requireAuth, async (req: any, res) => {
-    try {
-      const user = req.user;
-      
-      if (!user.companyId) {
-        // User not in a company, return only their jobs
-        const jobs = await storage.getAllJobs(user.id);
-        return res.json(jobs);
-      }
-      
-      // User is in a company, return all company jobs
-      const jobs = await storage.getCompanyJobs(user.companyId);
-      res.json(jobs);
-    } catch (error) {
-      console.error("Error fetching company jobs:", error);
-      res.status(500).json({ error: "Failed to fetch company jobs" });
     }
   });
 
