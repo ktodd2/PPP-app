@@ -47,6 +47,7 @@ function Router() {
   const [customServices, setCustomServices] = useState<
     Array<{ name: string; price: number }>
   >([]);
+  const [isHazmat, setIsHazmat] = useState(false);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
   const [currentJobId, setCurrentJobId] = useState<number | null>(null);
@@ -68,7 +69,8 @@ function Router() {
       selectedServices,
       services,
       subcontractors,
-      customServices
+      customServices,
+      isHazmat
     );
     setInvoice(calculatedInvoice);
 
@@ -189,6 +191,7 @@ function Router() {
     setSelectedServices({});
     setSubcontractors([]);
     setCustomServices([]);
+    setIsHazmat(false);
     setInvoice(null);
     setSelectedPhotos([]);
     setCurrentJobId(null);
@@ -241,6 +244,8 @@ function Router() {
               setSubcontractors={setSubcontractors}
               customServices={customServices}
               setCustomServices={setCustomServices}
+              isHazmat={isHazmat}
+              setIsHazmat={setIsHazmat}
               jobInfo={jobInfo}
               onCalculateInvoice={handleCalculateInvoice}
             />

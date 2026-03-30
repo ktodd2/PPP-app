@@ -323,6 +323,14 @@ export default function InvoicePage({
                   </span>
                 </div>
               )}
+              {invoice.isHazmat && invoice.hazmatAmount > 0 && (
+                <div className="flex justify-between text-sm text-orange-600">
+                  <span>Hazmat Surcharge (+200%)</span>
+                  <span className="font-medium">
+                    ${invoice.hazmatAmount.toFixed(2)}
+                  </span>
+                </div>
+              )}
               {invoice.subcontractorTotal > 0 && (
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Subcontractors</span>

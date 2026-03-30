@@ -29,7 +29,7 @@ interface CompanySettings {
 interface Service {
   id: number;
   name: string;
-  baseRate: string;
+  rate: string;
 }
 
 // ─── Company Info Tab ────────────────────────────────────────────────────────
@@ -284,7 +284,7 @@ function ServiceRatesTab() {
     if (services.length > 0) {
       const initial: Record<number, string> = {};
       services.forEach((s) => {
-        initial[s.id] = s.baseRate;
+        initial[s.id] = s.rate;
       });
       setRates(initial);
     }
@@ -294,7 +294,7 @@ function ServiceRatesTab() {
     mutationFn: async ({ id, rate }: { id: number; rate: string }) => {
       await fetchWithAuth(`/api/services/${id}`, {
         method: "PATCH",
-        body: JSON.stringify({ baseRate: rate }),
+        body: JSON.stringify({ rate }),
       });
     },
     onSuccess: () => {
@@ -312,7 +312,7 @@ function ServiceRatesTab() {
 
   const handleBlur = (id: number) => {
     const current = services.find((s) => s.id === id);
-    if (current && rates[id] !== current.baseRate) {
+    if (current && rates[id] !== current.rate) {
       updateMutation.mutate({ id, rate: rates[id] });
     }
   };
@@ -328,7 +328,7 @@ function ServiceRatesTab() {
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground mb-4">
-        Edit rates inline. Changes save automatically when you leave the field.
+        Edit rates inline (in cents per pound). Changes save automatically when you leave the field.
       </p>
       <div className="divide-y divide-border rounded-lg border border-border overflow-hidden">
         {services.map((service) => (
@@ -340,18 +340,18 @@ function ServiceRatesTab() {
               {service.name}
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-sm">$</span>
               <Input
                 type="number"
                 min={0}
-                step={0.01}
-                value={rates[service.id] ?? service.baseRate}
+                step={0.1}
+                value={rates[service.id] ?? service.rate}
                 onChange={(e) =>
                   setRates((r) => ({ ...r, [service.id]: e.target.value }))
                 }
                 onBlur={() => handleBlur(service.id)}
-                className="w-28 text-right"
+                className="w-24 text-right"
               />
+              <span className="text-muted-foreground text-sm">¢/lb</span>
             </div>
           </div>
         ))}

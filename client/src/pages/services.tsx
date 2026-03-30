@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { useAuthQuery } from "@/hooks/use-auth-query";
 import type { JobInfo } from "@/lib/invoice";
 import type { TowingService } from "@/lib/services";
-import { Plus, X, ChevronLeft, Calculator, Loader2 } from "lucide-react";
+import { Plus, X, ChevronLeft, Calculator, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -49,6 +49,8 @@ interface ServicesPageProps {
   ) => void;
   customServices: CustomService[];
   setCustomServices: (services: CustomService[]) => void;
+  isHazmat: boolean;
+  setIsHazmat: (isHazmat: boolean) => void;
   jobInfo: JobInfo;
   onCalculateInvoice: () => void;
 }
@@ -60,6 +62,8 @@ export default function ServicesPage({
   setSubcontractors,
   customServices,
   setCustomServices,
+  isHazmat,
+  setIsHazmat,
   jobInfo,
   onCalculateInvoice,
 }: ServicesPageProps) {
@@ -80,7 +84,7 @@ export default function ServicesPage({
     setSelectedServices({ ...selectedServices, [id]: !selectedServices[id] });
 
   // Running total estimate
-  const runningTotal = services
+  const servicesSubtotal = services
     .filter((s) => selectedServices[s.id])
     .reduce((sum, s) => {
       const rate =
@@ -90,9 +94,14 @@ export default function ServicesPage({
 
   const customTotal = customServices.reduce((sum, s) => sum + s.price, 0);
   const subTotal = subcontractors.reduce((sum, s) => sum + s.price, 0);
+
+  // Hazmat adds +200% to services + custom services (before fuel)
+  const hazmatAmount = isHazmat ? (servicesSubtotal + customTotal) * 2 : 0;
+  const runningTotal = servicesSubtotal + hazmatAmount;
+
   const fuelAmount =
-    (runningTotal + customTotal) * (jobInfo.fuelSurcharge / 100);
-  const estimatedTotal = runningTotal + customTotal + subTotal + fuelAmount;
+    (servicesSubtotal + customTotal + hazmatAmount) * (jobInfo.fuelSurcharge / 100);
+  const estimatedTotal = servicesSubtotal + customTotal + hazmatAmount + subTotal + fuelAmount;
 
   const addCustom = () => {
     const price = parseFloat(newCustom.price);
@@ -218,6 +227,48 @@ export default function ServicesPage({
           </Card>
         );
       })}
+
+      {/* Hazmat Surcharge */}
+      <Card className={`card-elevated ${isHazmat ? "border-orange-400 bg-orange-50/50" : ""}`}>
+        <CardContent className="py-4">
+          <div
+            className={[
+              "flex items-center justify-between px-3 py-3 rounded-md border cursor-pointer transition-colors",
+              isHazmat
+                ? "border-orange-400 bg-orange-100/50"
+                : "border-border bg-background hover:bg-muted",
+            ].join(" ")}
+            onClick={() => setIsHazmat(!isHazmat)}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${isHazmat ? "bg-orange-500" : "bg-muted"}`}>
+                <AlertTriangle className={`h-5 w-5 ${isHazmat ? "text-white" : "text-muted-foreground"}`} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Hazmat Recovery
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Adds +200% surcharge to services
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={isHazmat}
+              onCheckedChange={setIsHazmat}
+              onClick={(e) => e.stopPropagation()}
+              className="data-[state=checked]:bg-orange-500"
+            />
+          </div>
+          {isHazmat && hazmatAmount > 0 && (
+            <div className="mt-3 px-3 py-2 bg-orange-100 rounded-md">
+              <p className="text-sm font-semibold text-orange-800">
+                Hazmat surcharge: +${hazmatAmount.toFixed(2)}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Custom Services */}
       <Card className="card-elevated">
@@ -361,7 +412,7 @@ export default function ServicesPage({
             <div className="flex items-center justify-between text-sm text-muted-foreground mb-1">
               <span>Services subtotal</span>
               <span className="text-foreground font-medium">
-                ${runningTotal.toFixed(2)}
+                ${servicesSubtotal.toFixed(2)}
               </span>
             </div>
             {customTotal > 0 && (
@@ -369,6 +420,14 @@ export default function ServicesPage({
                 <span>Custom services</span>
                 <span className="text-foreground font-medium">
                   ${customTotal.toFixed(2)}
+                </span>
+              </div>
+            )}
+            {isHazmat && hazmatAmount > 0 && (
+              <div className="flex items-center justify-between text-sm text-orange-600 mb-1">
+                <span>Hazmat surcharge (+200%)</span>
+                <span className="font-medium">
+                  ${hazmatAmount.toFixed(2)}
                 </span>
               </div>
             )}

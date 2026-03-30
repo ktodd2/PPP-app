@@ -35,6 +35,8 @@ export interface Invoice {
   subcontractors: SubcontractorItem[];
   subtotal: number;
   customServicesTotal: number;
+  isHazmat: boolean;
+  hazmatAmount: number;
   subcontractorTotal: number;
   fuelSurchargeAmount: number;
   total: number;
@@ -46,10 +48,11 @@ export function calculateInvoice(
   selectedServices: Record<number, boolean>,
   allServices: TowingService[],
   subcontractors: SubcontractorItem[] = [],
-  customServices: Array<{name: string; price: number}> = []
+  customServices: Array<{name: string; price: number}> = [],
+  isHazmat: boolean = false
 ): Invoice {
   const selectedServicesList = allServices.filter(service => selectedServices[service.id]);
-  
+
   const servicesWithCosts: ServiceWithCost[] = selectedServicesList.map(service => {
     const rate = typeof service.rate === 'string' ? parseFloat(service.rate) : service.rate;
     const cost = (jobInfo.vehicleWeight * rate) / 100;
@@ -63,8 +66,13 @@ export function calculateInvoice(
   const subtotal = servicesWithCosts.reduce((sum, service) => sum + service.cost, 0);
   const customServicesTotal = customServices.reduce((sum, service) => sum + service.price, 0);
   const subcontractorTotal = subcontractors.reduce((sum, sub) => sum + sub.price, 0);
-  const fuelSurchargeAmount = (subtotal + customServicesTotal) * (jobInfo.fuelSurcharge / 100);
-  const total = subtotal + customServicesTotal + subcontractorTotal + fuelSurchargeAmount;
+
+  // Hazmat adds +200% to services + custom services (before fuel surcharge)
+  const hazmatAmount = isHazmat ? (subtotal + customServicesTotal) * 2 : 0;
+
+  // Fuel surcharge applies to services + custom + hazmat (not subcontractors)
+  const fuelSurchargeAmount = (subtotal + customServicesTotal + hazmatAmount) * (jobInfo.fuelSurcharge / 100);
+  const total = subtotal + customServicesTotal + hazmatAmount + subcontractorTotal + fuelSurchargeAmount;
 
   return {
     ...jobInfo,
@@ -73,6 +81,8 @@ export function calculateInvoice(
     subcontractors,
     subtotal,
     customServicesTotal,
+    isHazmat,
+    hazmatAmount,
     subcontractorTotal,
     fuelSurchargeAmount,
     total,
@@ -246,6 +256,12 @@ export async function exportToPDF(invoice: Invoice, jobPhotos: any[] = [], compa
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
               <span style="color: #4b5563;">Custom Services:</span>
               <span style="color: #374151; font-weight: 500;">$${invoice.customServicesTotal.toFixed(2)}</span>
+            </div>
+            ` : ''}
+            ${invoice.isHazmat && invoice.hazmatAmount > 0 ? `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="color: #ea580c;">Hazmat Surcharge (+200%):</span>
+              <span style="color: #ea580c; font-weight: 500;">$${invoice.hazmatAmount.toFixed(2)}</span>
             </div>
             ` : ''}
             ${invoice.subcontractorTotal > 0 ? `
