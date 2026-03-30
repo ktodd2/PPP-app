@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/hooks/use-auth";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 
 import AppLayout from "@/components/AppLayout";
@@ -26,6 +26,7 @@ import type { Job } from "@shared/schema";
 
 function Router() {
   const [, setLocation] = useLocation();
+  const { session } = useAuth();
 
   const [jobInfo, setJobInfo] = useState<JobInfo>({
     customerName: "",
@@ -49,10 +50,12 @@ function Router() {
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
   const [currentJobId, setCurrentJobId] = useState<number | null>(null);
 
+  // Only fetch services when user is authenticated
   const { data: services = [] } = useQuery({
     queryKey: ["/api/services"],
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
+    enabled: !!session,
   });
 
   // ── Calculate invoice + persist job ─────────────────────────────────────
