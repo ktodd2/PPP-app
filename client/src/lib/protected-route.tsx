@@ -9,7 +9,7 @@ export function ProtectedRoute({
   path: string;
   component: () => React.JSX.Element;
 }) {
-  const { session, isLoading } = useAuth();
+  const { session, user, isLoading, pendingApproval } = useAuth();
 
   if (isLoading) {
     return (
@@ -21,7 +21,8 @@ export function ProtectedRoute({
     );
   }
 
-  if (!session) {
+  // Redirect if: no session, no user profile, or pending approval
+  if (!session || !user || pendingApproval) {
     return (
       <Route path={path}>
         <Redirect to="/auth" />
