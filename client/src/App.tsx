@@ -16,6 +16,7 @@ import AuthPage from "@/pages/auth-page";
 import AdminPage from "@/pages/admin";
 import DashboardPage from "@/pages/dashboard";
 import JobsPage from "@/pages/jobs";
+import JobDetailPage from "@/pages/job-detail";
 import SettingsPage from "@/pages/settings";
 
 import { calculateInvoice } from "@/lib/invoice";
@@ -265,6 +266,15 @@ function Router() {
         component={() => (
           <AppLayout>
             <JobsPage />
+          </AppLayout>
+        )}
+      />
+
+      <ProtectedRoute
+        path="/jobs/:id"
+        component={() => (
+          <AppLayout>
+            <JobDetailPage />
           </AppLayout>
         )}
       />
