@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuthQuery } from "@/hooks/use-auth-query";
 import type { JobInfo } from "@/lib/invoice";
 import type { TowingService } from "@/lib/services";
 import { Plus, X, ChevronLeft, Calculator, Loader2 } from "lucide-react";
@@ -65,7 +64,6 @@ export default function ServicesPage({
   onCalculateInvoice,
 }: ServicesPageProps) {
   const [, setLocation] = useLocation();
-  const { session } = useAuth();
 
   const [newSub, setNewSub] = useState({
     name: "",
@@ -74,10 +72,9 @@ export default function ServicesPage({
   });
   const [newCustom, setNewCustom] = useState({ name: "", price: "" });
 
-  const { data: services = [], isLoading, isError } = useQuery<TowingService[]>({
-    queryKey: ["/api/services"],
-    enabled: !!session,
-  });
+  const { data: services = [], isLoading, isError } = useAuthQuery<TowingService[]>(
+    ["/api/services"]
+  );
 
   const toggle = (id: number) =>
     setSelectedServices({ ...selectedServices, [id]: !selectedServices[id] });

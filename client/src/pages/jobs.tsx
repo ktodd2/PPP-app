@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useAuthQuery } from "@/hooks/use-auth-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -47,9 +47,7 @@ export default function JobsPage() {
   const [toDate, setToDate] = useState("");
   const [page, setPage] = useState(1);
 
-  const { data: jobs = [], isLoading } = useQuery<Job[]>({
-    queryKey: ["/api/jobs"],
-  });
+  const { data: jobs = [], isLoading } = useAuthQuery<Job[]>(["/api/jobs"]);
 
   // Client-side filtering
   const filtered = useMemo(() => {

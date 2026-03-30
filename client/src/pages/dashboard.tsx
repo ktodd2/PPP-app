@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useAuthQuery } from "@/hooks/use-auth-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -96,21 +96,13 @@ export default function DashboardPage() {
   const { user } = useAuth();
 
   const { data: summary, isLoading: summaryLoading } =
-    useQuery<AnalyticsSummary>({
-      queryKey: ["/api/analytics/summary"],
-    });
+    useAuthQuery<AnalyticsSummary>(["/api/analytics/summary"]);
 
-  const { data: revenueData = [], isLoading: revenueLoading } = useQuery<
-    RevenueDataPoint[]
-  >({
-    queryKey: ["/api/analytics/revenue"],
-  });
+  const { data: revenueData = [], isLoading: revenueLoading } =
+    useAuthQuery<RevenueDataPoint[]>(["/api/analytics/revenue"]);
 
-  const { data: recentJobs = [], isLoading: jobsLoading } = useQuery<
-    RecentJob[]
-  >({
-    queryKey: ["/api/jobs/recent?limit=5"],
-  });
+  const { data: recentJobs = [], isLoading: jobsLoading } =
+    useAuthQuery<RecentJob[]>(["/api/jobs/recent?limit=5"]);
 
   const displayName = user?.displayName || user?.email || "there";
 

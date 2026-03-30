@@ -51,11 +51,13 @@ function Router() {
   const [currentJobId, setCurrentJobId] = useState<number | null>(null);
 
   // Only fetch services when user is authenticated
+  // Pass token via meta to avoid race conditions with Supabase session state
   const { data: services = [] } = useQuery({
     queryKey: ["/api/services"],
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     enabled: !!session,
+    meta: { token: session?.access_token },
   });
 
   // ── Calculate invoice + persist job ─────────────────────────────────────
