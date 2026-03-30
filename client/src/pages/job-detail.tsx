@@ -159,7 +159,7 @@ export default function JobDetailPage() {
     companySettings?.companySubtitle || "Heavy Duty Recovery Services";
 
   return (
-    <div className="bg-muted/40 min-h-screen pb-24 md:pb-8">
+    <div className="bg-muted/40 min-h-screen pb-40 md:pb-8">
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Invoice document */}
         <div
@@ -412,7 +412,7 @@ export default function JobDetailPage() {
 
       {/* Mobile fixed bottom action bar */}
       <div
-        className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-30 no-print"
+        className="md:hidden fixed bottom-[60px] left-0 right-0 bg-card border-t border-border z-30 no-print"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="flex items-center gap-2 px-3 py-2.5">
