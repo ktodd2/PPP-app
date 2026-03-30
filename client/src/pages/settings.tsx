@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
+import { useAuthQuery } from "@/hooks/use-auth-query";
 import { supabase } from "@/lib/supabase";
 import { fetchWithAuth } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -38,9 +39,9 @@ function CompanyInfoTab() {
   const qc = useQueryClient();
   const [uploading, setUploading] = useState(false);
 
-  const { data: company, isLoading } = useQuery<CompanySettings>({
-    queryKey: ["/api/company"],
-  });
+  const { data: company, isLoading } = useAuthQuery<CompanySettings>(
+    ["/api/company"]
+  );
 
   const [form, setForm] = useState<CompanySettings>({
     name: "",
@@ -273,9 +274,9 @@ function ServiceRatesTab() {
   const { toast } = useToast();
   const qc = useQueryClient();
 
-  const { data: services = [], isLoading } = useQuery<Service[]>({
-    queryKey: ["/api/services"],
-  });
+  const { data: services = [], isLoading } = useAuthQuery<Service[]>(
+    ["/api/services"]
+  );
 
   const [rates, setRates] = useState<Record<number, string>>({});
 

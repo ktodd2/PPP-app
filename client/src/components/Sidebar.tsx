@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchWithAuth } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/use-auth';
+import { useAuthQuery } from '@/hooks/use-auth-query';
 import { useLocation } from 'wouter';
 import type { Job, TowingService, CompanySettings, User } from '@shared/schema';
 import { X, Clock, Wrench, Building2, Crown, Upload, FileText, Truck } from 'lucide-react';
@@ -32,22 +33,22 @@ export default function Sidebar({ isOpen, onClose, onJobSelect }: SidebarProps) 
   }, [queryClient]);
 
   // Fetch recent jobs
-  const { data: recentJobs = [] } = useQuery<Job[]>({
-    queryKey: ['/api/jobs/recent'],
-    enabled: activeTab === 'jobs'
-  });
+  const { data: recentJobs = [] } = useAuthQuery<Job[]>(
+    ['/api/jobs/recent'],
+    { enabled: activeTab === 'jobs' }
+  );
 
   // Fetch services for editing
-  const { data: services = [] } = useQuery<TowingService[]>({
-    queryKey: ['/api/services'],
-    enabled: activeTab === 'services'
-  });
+  const { data: services = [] } = useAuthQuery<TowingService[]>(
+    ['/api/services'],
+    { enabled: activeTab === 'services' }
+  );
 
   // Fetch company settings
-  const { data: companySettings } = useQuery<CompanySettings>({
-    queryKey: ['/api/company'],
-    enabled: activeTab === 'company'
-  });
+  const { data: companySettings } = useAuthQuery<CompanySettings>(
+    ['/api/company'],
+    { enabled: activeTab === 'company' }
+  );
 
   // Mutation for updating service rates
   const updateServiceMutation = useMutation({
