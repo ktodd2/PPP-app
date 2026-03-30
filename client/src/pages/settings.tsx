@@ -107,7 +107,7 @@ function CompanyInfoTab() {
 
       await fetchWithAuth("/api/company/logo", {
         method: "POST",
-        body: JSON.stringify({ path }),
+        body: JSON.stringify({ logoPath: path }),
       });
       setForm((f) => ({ ...f, logoPath: path }));
       qc.invalidateQueries({ queryKey: ["/api/company"] });
