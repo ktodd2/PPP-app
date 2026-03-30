@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, decimal, timestamp, varchar, pgEnum, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, decimal, timestamp, varchar, pgEnum, uuid, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -28,6 +28,7 @@ export const users = pgTable("users", {
   displayName: varchar("display_name", { length: 255 }),
   role: userRoleEnum("role").notNull().default("user"),
   companyId: integer("company_id").references(() => companies.id),
+  approved: boolean("approved").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

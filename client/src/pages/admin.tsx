@@ -27,7 +27,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Plus, Users, Building } from "lucide-react";
+import { Trash2, Plus, Users, Building, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface User {
   id: number;
@@ -35,6 +36,7 @@ interface User {
   displayName: string | null;
   role: "admin" | "user";
   companyId: number | null;
+  approved: boolean;
   createdAt: string;
 }
 
@@ -63,6 +65,10 @@ export default function AdminPage() {
     queryKey: ["/api/admin/companies"],
   });
 
+  const { data: pendingUsers = [], isLoading: pendingLoading } = useQuery<User[]>({
+    queryKey: ["/api/admin/users/pending"],
+  });
+
   const createUserMutation = useMutation({
     mutationFn: (data: { email: string; password: string; displayName: string; role: string; companyId: number | null }) =>
       fetchWithAuth("/api/admin/users", {
@@ -89,7 +95,21 @@ export default function AdminPage() {
       fetchWithAuth(`/api/admin/users/${userId}`, { method: "DELETE" }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      qc.invalidateQueries({ queryKey: ["/api/admin/users/pending"] });
       toast({ title: "User deleted" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const approveUserMutation = useMutation({
+    mutationFn: (userId: number) =>
+      fetchWithAuth(`/api/admin/users/${userId}/approve`, { method: "PATCH" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      qc.invalidateQueries({ queryKey: ["/api/admin/users/pending"] });
+      toast({ title: "User approved" });
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -184,11 +204,76 @@ export default function AdminPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Users className="w-8 h-8 text-[#0077B6]" />
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
           <p className="text-gray-500 text-sm">Manage users and companies</p>
         </div>
+        {pendingUsers.length > 0 && (
+          <Badge variant="destructive" className="text-sm px-3 py-1">
+            {pendingUsers.length} pending
+          </Badge>
+        )}
       </div>
+
+      {/* Pending Users Section */}
+      {pendingUsers.length > 0 && (
+        <Card className="border-orange-200 bg-orange-50/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-orange-800">
+              <Clock className="w-5 h-5" /> Pending Approval
+            </CardTitle>
+            <CardDescription>
+              These users have signed up and are waiting for your approval
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {pendingUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className="flex items-center justify-between p-4 bg-white rounded-lg border border-orange-200 shadow-sm"
+                >
+                  <div className="space-y-1">
+                    <p className="font-medium text-gray-900">
+                      {user.displayName || "No name"}
+                    </p>
+                    <p className="text-sm text-gray-500">{user.email}</p>
+                    <p className="text-xs text-gray-400">
+                      Registered {new Date(user.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => approveUserMutation.mutate(user.id)}
+                      disabled={approveUserMutation.isPending}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-1" /> Approve
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        if (
+                          confirm(
+                            `Reject and delete "${user.email}"? This will permanently remove their account.`
+                          )
+                        ) {
+                          deleteUserMutation.mutate(user.id);
+                        }
+                      }}
+                      disabled={deleteUserMutation.isPending}
+                    >
+                      <XCircle className="w-4 h-4 mr-1" /> Reject
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Companies */}

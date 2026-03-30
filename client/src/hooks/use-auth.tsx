@@ -19,10 +19,15 @@ type UserProfile = {
   createdAt: string;
 };
 
+type PendingApprovalInfo = {
+  displayName: string;
+};
+
 type AuthContextType = {
   user: UserProfile | null;
   session: Session | null;
   isLoading: boolean;
+  pendingApproval: PendingApprovalInfo | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -38,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [pendingApproval, setPendingApproval] = useState<PendingApprovalInfo | null>(null);
 
   // Fetch our app's user profile from the API using the Supabase bearer token.
   async function fetchProfile(activeSession: Session): Promise<void> {
@@ -47,14 +53,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           Authorization: `Bearer ${activeSession.access_token}`,
         },
       });
+
+      if (res.status === 403) {
+        const data = await res.json();
+        if (data.message === "pending_approval") {
+          setPendingApproval({ displayName: data.displayName });
+          setUser(null);
+          return;
+        }
+      }
+
       if (!res.ok) {
         setUser(null);
+        setPendingApproval(null);
         return;
       }
       const profile: UserProfile = await res.json();
       setUser(profile);
+      setPendingApproval(null);
     } catch {
       setUser(null);
+      setPendingApproval(null);
     }
   }
 
@@ -124,11 +143,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw new Error(error.message);
     setUser(null);
     setSession(null);
+    setPendingApproval(null);
   }
 
   return (
     <AuthContext.Provider
-      value={{ user, session, isLoading, signIn, signUp, signOut }}
+      value={{ user, session, isLoading, pendingApproval, signIn, signUp, signOut }}
     >
       {children}
     </AuthContext.Provider>

@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Truck } from "lucide-react";
+import { Truck, Clock, LogOut } from "lucide-react";
 
 // ─── Forgot Password Section ──────────────────────────────────────────────────
 
@@ -104,7 +104,7 @@ function ForgotPasswordSection() {
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
-  const { user, signIn, signUp } = useAuth();
+  const { user, signIn, signUp, signOut, pendingApproval } = useAuth();
 
   // Login state
   const [loginEmail, setLoginEmail] = useState("");
@@ -125,6 +125,77 @@ export default function AuthPage() {
   if (user) {
     setLocation("/dashboard");
     return null;
+  }
+
+  // Show pending approval message
+  if (pendingApproval) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center p-4"
+        style={{
+          background:
+            "linear-gradient(135deg, #003f5c 0%, #0077B6 50%, #00b4d8 100%)",
+        }}
+      >
+        <div className="w-full max-w-sm space-y-6">
+          {/* Brand header */}
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm shadow-lg">
+              <Truck className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1
+                className="text-5xl font-black text-white"
+                style={{ letterSpacing: "-0.03em" }}
+              >
+                PPP
+              </h1>
+              <p className="text-blue-100 text-sm font-medium mt-1 tracking-wide">
+                Price per Pound
+              </p>
+            </div>
+          </div>
+
+          {/* Pending approval card */}
+          <Card className="shadow-2xl border-0 bg-white/97 backdrop-blur-sm">
+            <CardContent className="pt-6 pb-6 px-6">
+              <div className="text-center space-y-4">
+                <div
+                  className="inline-flex items-center justify-center w-16 h-16 rounded-full"
+                  style={{ backgroundColor: "#FF9F1C20" }}
+                >
+                  <Clock className="h-8 w-8" style={{ color: "#FF9F1C" }} />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl font-bold text-foreground">
+                    Account Pending Approval
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Hi {pendingApproval.displayName}, your account has been created
+                    and is waiting for administrator approval.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    You'll receive access once an admin reviews your registration.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => signOut()}
+                  className="mt-4"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <p className="text-center text-blue-200/70 text-xs">
+            Professional towing invoice management
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const handleLogin = async (e: React.FormEvent) => {

@@ -9,6 +9,9 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(insertUser: InsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
+  getPendingUsers(): Promise<User[]>;
+  getAdminUsers(): Promise<User[]>;
+  approveUser(userId: number): Promise<User>;
   updateUserCompany(userId: number, companyId: number | null): Promise<User>;
   updateUserRole(userId: number, role: "admin" | "user"): Promise<User>;
   deleteUser(userId: number): Promise<void>;
@@ -115,6 +118,23 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(userId: number): Promise<void> {
     await db.delete(users).where(eq(users.id, userId));
+  }
+
+  async getPendingUsers(): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.approved, false)).orderBy(desc(users.createdAt));
+  }
+
+  async getAdminUsers(): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.role, "admin"));
+  }
+
+  async approveUser(userId: number): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ approved: true })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
   }
 
   // Company methods

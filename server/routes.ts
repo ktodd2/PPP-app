@@ -308,12 +308,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         displayName: u.displayName,
         role: u.role,
         companyId: u.companyId,
+        approved: u.approved,
         createdAt: u.createdAt,
       }));
       res.json(sanitizedUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/admin/users/pending", requireAdmin, async (_req: any, res) => {
+    try {
+      const users = await storage.getPendingUsers();
+      const sanitizedUsers = users.map((u) => ({
+        id: u.id,
+        email: u.email,
+        displayName: u.displayName,
+        role: u.role,
+        companyId: u.companyId,
+        approved: u.approved,
+        createdAt: u.createdAt,
+      }));
+      res.json(sanitizedUsers);
+    } catch (error) {
+      console.error("Error fetching pending users:", error);
+      res.status(500).json({ error: "Failed to fetch pending users" });
+    }
+  });
+
+  app.patch("/api/admin/users/:id/approve", requireAdmin, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const user = await storage.approveUser(userId);
+      res.json({
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        role: user.role,
+        companyId: user.companyId,
+        approved: user.approved,
+      });
+    } catch (error) {
+      console.error("Error approving user:", error);
+      res.status(400).json({ error: "Failed to approve user" });
     }
   });
 
