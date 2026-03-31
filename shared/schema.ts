@@ -60,7 +60,7 @@ export const jobs = pgTable("jobs", {
   vehicleType: text("vehicle_type").notNull(),
   vehicleWeight: integer("vehicle_weight").notNull(),
   problemDescription: text("problem_description").notNull(),
-  fuelSurcharge: decimal("fuel_surcharge", { precision: 5, scale: 2 }).notNull().default("15"),
+  fuelSurcharge: decimal("fuel_surcharge", { precision: 5, scale: 2 }).notNull().default("20"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -102,7 +102,7 @@ export const companySettings = pgTable("company_settings", {
   phone: text("phone"),
   email: text("email"),
   website: text("website"),
-  defaultFuelSurcharge: decimal("default_fuel_surcharge", { precision: 5, scale: 2 }).notNull().default("15"),
+  defaultFuelSurcharge: decimal("default_fuel_surcharge", { precision: 5, scale: 2 }).notNull().default("20"),
   invoiceFooter: text("invoice_footer").default("Thank you for your business!\nPayment due within 30 days"),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

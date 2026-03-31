@@ -51,7 +51,7 @@ function CompanyInfoTab() {
     email: "",
     website: "",
     companyLogo: "",
-    defaultFuelSurcharge: 15,
+    defaultFuelSurcharge: 20,
     invoiceFooter: "",
   });
 
@@ -65,7 +65,7 @@ function CompanyInfoTab() {
         email: company.email ?? "",
         website: company.website ?? "",
         companyLogo: company.companyLogo ?? "",
-        defaultFuelSurcharge: company.defaultFuelSurcharge ?? 15,
+        defaultFuelSurcharge: company.defaultFuelSurcharge ?? 20,
         invoiceFooter: company.invoiceFooter ?? "",
       });
     }

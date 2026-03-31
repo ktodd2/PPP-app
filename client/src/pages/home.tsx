@@ -131,7 +131,7 @@ export default function HomePage({
                 inputMode="decimal"
                 value={form.fuelSurcharge}
                 onChange={(e) => set("fuelSurcharge", e.target.value)}
-                placeholder="15"
+                placeholder="20"
                 min="0"
                 step="0.5"
               />

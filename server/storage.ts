@@ -291,7 +291,7 @@ export class DatabaseStorage implements IStorage {
         companyName: "Professional Towing",
         companySubtitle: "Heavy Duty Recovery Services",
         companyLogo: "🚛",
-        defaultFuelSurcharge: "15",
+        defaultFuelSurcharge: "20",
         invoiceFooter: "Thank you for your business!\nPayment due within 30 days"
       });
     }

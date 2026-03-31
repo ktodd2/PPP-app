@@ -35,7 +35,7 @@ function Router() {
     vehicleType: "",
     vehicleWeight: 0,
     problemDescription: "",
-    fuelSurcharge: 15,
+    fuelSurcharge: 20,
   });
 
   const [selectedServices, setSelectedServices] = useState<
@@ -186,7 +186,7 @@ function Router() {
       vehicleType: "",
       vehicleWeight: 0,
       problemDescription: "",
-      fuelSurcharge: 15,
+      fuelSurcharge: 20,
     });
     setSelectedServices({});
     setSubcontractors([]);
