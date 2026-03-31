@@ -10,27 +10,6 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import StepIndicator from "@/components/StepIndicator";
 
-// ─── Service categories ────────────────────────────────────────────────────────
-
-const CATEGORIES: { label: string; serviceIds: number[] }[] = [
-  {
-    label: "Recovery",
-    serviceIds: [1, 2, 3],
-  },
-  {
-    label: "Environmental",
-    serviceIds: [4, 5],
-  },
-  {
-    label: "Travel",
-    serviceIds: [6, 7],
-  },
-  {
-    label: "Damage / Collision",
-    serviceIds: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-  },
-];
-
 interface CustomService {
   name: string;
   price: number;
@@ -164,69 +143,60 @@ export default function ServicesPage({
       {/* Step indicator */}
       <StepIndicator currentStep={2} />
 
-      {/* Grouped service categories */}
-      {CATEGORIES.map((cat) => {
-        const catServices = services.filter((s) =>
-          cat.serviceIds.includes(s.id)
-        );
-        if (catServices.length === 0) return null;
+      {/* Services */}
+      <Card className="card-elevated">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold text-foreground">
+            Services
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {services.map((service) => {
+            const rate =
+              typeof service.rate === "string"
+                ? parseFloat(service.rate)
+                : service.rate;
+            const isSelected = selectedServices[service.id] || false;
 
-        return (
-          <Card key={cat.label} className="card-elevated">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold text-foreground">
-                {cat.label}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {catServices.map((service) => {
-                const rate =
-                  typeof service.rate === "string"
-                    ? parseFloat(service.rate)
-                    : service.rate;
-                const isSelected = selectedServices[service.id] || false;
-
-                return (
-                  <div
-                    key={service.id}
-                    className={[
-                      "flex items-center justify-between px-3 py-3 rounded-md border service-toggle cursor-pointer",
-                      isSelected
-                        ? "border-[#0077B6]/40 bg-[#0077B6]/5"
-                        : "border-border bg-background hover:bg-muted",
-                    ].join(" ")}
-                    onClick={() => toggle(service.id)}
-                  >
-                    <div className="flex-1 min-w-0 mr-3">
-                      <p className="text-sm font-medium text-foreground leading-tight">
-                        {service.name}
-                      </p>
-                      <p className="text-xs text-[#0077B6] font-semibold mt-0.5">
-                        {rate.toFixed(1)}¢/lb
-                        {jobInfo.vehicleWeight > 0 && (
-                          <span className="text-muted-foreground font-normal ml-1.5">
-                            ≈ $
-                            {(
-                              (jobInfo.vehicleWeight * rate) /
-                              100
-                            ).toFixed(2)}
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                    <Switch
-                      checked={isSelected}
-                      onCheckedChange={() => toggle(service.id)}
-                      onClick={(e) => e.stopPropagation()}
-                      className="data-[state=checked]:bg-[#0077B6]"
-                    />
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-        );
-      })}
+            return (
+              <div
+                key={service.id}
+                className={[
+                  "flex items-center justify-between px-3 py-3 rounded-md border service-toggle cursor-pointer",
+                  isSelected
+                    ? "border-[#0077B6]/40 bg-[#0077B6]/5"
+                    : "border-border bg-background hover:bg-muted",
+                ].join(" ")}
+                onClick={() => toggle(service.id)}
+              >
+                <div className="flex-1 min-w-0 mr-3">
+                  <p className="text-sm font-medium text-foreground leading-tight">
+                    {service.name}
+                  </p>
+                  <p className="text-xs text-[#0077B6] font-semibold mt-0.5">
+                    {rate.toFixed(1)}¢/lb
+                    {jobInfo.vehicleWeight > 0 && (
+                      <span className="text-muted-foreground font-normal ml-1.5">
+                        ≈ $
+                        {(
+                          (jobInfo.vehicleWeight * rate) /
+                          100
+                        ).toFixed(2)}
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <Switch
+                  checked={isSelected}
+                  onCheckedChange={() => toggle(service.id)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="data-[state=checked]:bg-[#0077B6]"
+                />
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
 
       {/* Hazmat Surcharge */}
       <Card className={`card-elevated ${isHazmat ? "border-orange-400 bg-orange-50/50" : ""}`}>
