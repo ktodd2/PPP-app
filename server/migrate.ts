@@ -8,7 +8,7 @@ export async function runMigrations() {
   console.log("🔄 [MIGRATION] Current working directory:", process.cwd());
   
   try {
-    const migrationPath = path.join(process.cwd(), "db/migrations/003_add_user_approval.sql");
+    const migrationPath = path.join(process.cwd(), "db/migrations/004_update_defaults.sql");
     console.log("🔄 [MIGRATION] Looking for migration at:", migrationPath);
     
     // Check if migration file exists
