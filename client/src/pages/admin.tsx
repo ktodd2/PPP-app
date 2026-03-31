@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchWithAuth } from "@/lib/queryClient";
+import { useAuthQuery } from "@/hooks/use-auth-query";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -57,17 +58,17 @@ export default function AdminPage() {
   const [newUserCompany, setNewUserCompany] = useState<string>("");
   const [newCompanyName, setNewCompanyName] = useState("");
 
-  const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({
-    queryKey: ["/api/admin/users"],
-  });
+  const { data: users = [], isLoading: usersLoading } = useAuthQuery<User[]>(
+    ["/api/admin/users"]
+  );
 
-  const { data: companies = [], isLoading: companiesLoading } = useQuery<Company[]>({
-    queryKey: ["/api/admin/companies"],
-  });
+  const { data: companies = [], isLoading: companiesLoading } = useAuthQuery<Company[]>(
+    ["/api/admin/companies"]
+  );
 
-  const { data: pendingUsers = [], isLoading: pendingLoading } = useQuery<User[]>({
-    queryKey: ["/api/admin/users/pending"],
-  });
+  const { data: pendingUsers = [], isLoading: pendingLoading } = useAuthQuery<User[]>(
+    ["/api/admin/users/pending"]
+  );
 
   const createUserMutation = useMutation({
     mutationFn: (data: { email: string; password: string; displayName: string; role: string; companyId: number | null }) =>
