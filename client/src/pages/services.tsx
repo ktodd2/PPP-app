@@ -27,7 +27,7 @@ const CATEGORIES: { label: string; serviceIds: number[] }[] = [
   },
   {
     label: "Damage / Collision",
-    serviceIds: [8, 9, 10, 11, 12, 13, 14, 15, 16],
+    serviceIds: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
   },
 ];
 
