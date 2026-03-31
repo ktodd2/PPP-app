@@ -15,19 +15,19 @@ import StepIndicator from "@/components/StepIndicator";
 const CATEGORIES: { label: string; serviceIds: number[] }[] = [
   {
     label: "Recovery",
-    serviceIds: [1, 2, 3, 4, 5, 6],
+    serviceIds: [1, 2, 3],
   },
   {
     label: "Environmental",
-    serviceIds: [7, 8],
+    serviceIds: [4, 5],
   },
   {
     label: "Travel",
-    serviceIds: [9, 10],
+    serviceIds: [6, 7],
   },
   {
     label: "Damage / Collision",
-    serviceIds: [11, 12, 13, 14, 15, 16, 17, 18, 19],
+    serviceIds: [8, 9, 10, 11, 12, 13, 14, 15, 16],
   },
 ];
 

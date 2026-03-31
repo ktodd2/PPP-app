@@ -220,27 +220,24 @@ export class DatabaseStorage implements IStorage {
       return; // Already seeded
     }
 
-    // All 19 towing services with correct rates (cents per pound)
+    // 16 towing services with rates from normal recovery spreadsheet (cents per pound)
     const servicesToSeed = [
-      { name: "Normal Recovery (On or Near Highway)", rate: "4.0" },
-      { name: "Contained Recovery/Winching", rate: "4.0" },
-      { name: "Salvage/Debris Recovery", rate: "5.5" },
-      { name: "Handle Complete Recovery", rate: "6.0" },
-      { name: "Total Loss Recovery", rate: "5.0" },
-      { name: "Rollover", rate: "4.0" },
-      { name: "Inclement Weather", rate: "2.5" },
-      { name: "Nights/Weekends/Holidays", rate: "2.5" },
-      { name: "Travel Within 50 Miles", rate: "3.5" },
-      { name: "Travel Beyond 50 Miles", rate: "6.5" },
-      { name: "Wheels Higher than Roof", rate: "2.0" },
-      { name: "Embankment or Inclines", rate: "4.5" },
-      { name: "Back Doors Open", rate: "2.0" },
-      { name: "Tractor from Under Trailer", rate: "2.0" },
-      { name: "Major Suspension Damage", rate: "6.0" },
-      { name: "10 MPH Collision Factor", rate: "2.0" },
-      { name: "30 MPH Collision Factor", rate: "3.0" },
-      { name: "50 MPH Collision Factor", rate: "4.0" },
-      { name: "70+ MPH Collision Factor", rate: "5.0" }
+      { name: "Contained Recovery/Winching", rate: "5.5" },
+      { name: "Salvage/Debris Recovery", rate: "6.5" },
+      { name: "Handle Complete Recovery", rate: "7.0" },
+      { name: "Inclement Weather", rate: "3.5" },
+      { name: "Nights/Weekends/Holidays", rate: "3.5" },
+      { name: "Travel Within 50 Miles", rate: "4.5" },
+      { name: "Travel Beyond 50 Miles", rate: "7.5" },
+      { name: "Wheels Higher than Roof", rate: "3.0" },
+      { name: "Embankment or Inclines", rate: "3.0" },
+      { name: "Back Doors Open", rate: "3.0" },
+      { name: "Tractor from Under Trailer", rate: "3.0" },
+      { name: "Major Suspension Damage", rate: "7.0" },
+      { name: "10 MPH Collision Factor", rate: "3.0" },
+      { name: "30 MPH Collision Factor", rate: "4.0" },
+      { name: "50 MPH Collision Factor", rate: "5.0" },
+      { name: "70 MPH Collision Factor", rate: "6.0" }
     ];
 
     await db.insert(towingServices).values(servicesToSeed);
