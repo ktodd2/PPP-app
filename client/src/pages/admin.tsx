@@ -183,7 +183,7 @@ export default function AdminPage() {
       password: newPassword,
       displayName: newDisplayName || newEmail.split("@")[0],
       role: newUserRole,
-      companyId: newUserCompany ? parseInt(newUserCompany) : null,
+      companyId: newUserCompany && newUserCompany !== "none" ? parseInt(newUserCompany) : null,
     });
   };
 
@@ -385,7 +385,7 @@ export default function AdminPage() {
                 <Select value={newUserCompany} onValueChange={setNewUserCompany}>
                   <SelectTrigger><SelectValue placeholder="Optional" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No company</SelectItem>
+                    <SelectItem value="none">No company</SelectItem>
                     {companies.map((c) => (
                       <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
                     ))}
@@ -443,11 +443,11 @@ export default function AdminPage() {
                     </TableCell>
                     <TableCell>
                       <Select
-                        value={user.companyId?.toString() || ""}
+                        value={user.companyId?.toString() || "none"}
                         onValueChange={(v) =>
                           updateUserCompanyMutation.mutate({
                             userId: user.id,
-                            companyId: v ? parseInt(v) : null,
+                            companyId: v === "none" ? null : parseInt(v),
                           })
                         }
                       >
@@ -455,7 +455,7 @@ export default function AdminPage() {
                           <SelectValue placeholder={getCompanyName(user.companyId)} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {companies.map((c) => (
                             <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
                           ))}
